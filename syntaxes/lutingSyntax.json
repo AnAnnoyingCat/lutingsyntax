@@ -38,11 +38,11 @@
 	  },
 	  {
 		"name": "end-definition",
-		"match": "\\}"
+		"match": "\\}\\d*"
 	  },
 	  {
 	  "name": "predefined-section",
-	  "match": "[A-Z]"
+	  "match": "[A-Z]\\d*"
 	  },
 	  {
 		"name": "newVoice",
@@ -55,7 +55,18 @@
 	  {
 		"name": "lutingheader",
 		"match": "#lute \\d+"
-	  }
+	  },
+	  {
+		"name": "chord",
+		"begin": "\\(",
+		"end": "\\)",
+		"patterns": [
+			{
+				"name": "chordnote",
+				"match": "[^)]"
+			}
+		]
+		}
 	]
   }
   

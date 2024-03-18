@@ -42,6 +42,12 @@
       }
     },
     {
+      "scope": "source chord",
+      "settings": {
+        "foreground": "#a468cc"
+      }
+    },
+    {
         "scope": "source fraction",
         "settings": {
             "foreground": "#4AD9BA"
@@ -50,25 +56,25 @@
     {
         "scope": "source instrument",
         "settings": {
-            "foreground": "#89CBD2"
+            "foreground": "#C38EFF"
         }
     },
     {
         "scope": "source octave",
         "settings": {
-            "foreground": "#bfdbf7"
+            "foreground": "#aeb4b5"
         }
     },
     {
         "scope": "source volume",
         "settings": {
-            "foreground": "#bfdbf7"
+            "foreground": "#aeb4b5"
         }
     },
     {
         "scope": "source time",
         "settings": {
-            "foreground": "#bfdbf7"
+            "foreground": "#aeb4b5"
         }
     },
     {
@@ -100,6 +106,12 @@
         "settings": {
             "foreground": "#C38EFF"
         }
+    },
+    {
+      "scope": "source newVoice",
+      "settings": {
+          "foreground": "#C38EFF"
+      }
     },
     {
       "scope": "meta.embedded",
