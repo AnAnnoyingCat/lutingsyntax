@@ -61,6 +61,9 @@ export class myLuteDocumentSemanticTokensProvider {
 						lutingTokens.push(new lutingToken(fullString , "predefined-section"));
 						lineIndex += fullString.length;
 					} 
+                } else if(char === '('){
+                    const trailingNum = line.substring(lineIndex+1).match(/[^)]+/);
+                    const closingBracket = line.substring(lineIndex+1).match(/)/);
                 } else if (char === '}') {
                     // Match end-definition
 					const trailingNum = line.substring(lineIndex+1).match(/\d+/);
@@ -72,7 +75,7 @@ export class myLuteDocumentSemanticTokensProvider {
                     	lutingTokens.push(new lutingToken(char, "end-definition"));
                     	lineIndex++;
 					}
-                } else if (char === '|') {
+                }else if (char === '|') {
                     // Match new-voice
                     lutingTokens.push(new lutingToken(char, "new-voice"));
                     lineIndex++;

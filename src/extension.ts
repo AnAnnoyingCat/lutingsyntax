@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { printTokens } from './Language/tokenPrinter';
 export function activate(context: vscode.ExtensionContext) {
-    console.log("activate was called")
+    console.log("activate was called");
     // Register a language feature provider for the lute language
     const command = 'lutingsyntax.printTokens';
     const commandHandler = async () => {

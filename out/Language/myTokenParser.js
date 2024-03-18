@@ -62,6 +62,10 @@ class myLuteDocumentSemanticTokensProvider {
                         lineIndex += fullString.length;
                     }
                 }
+                else if (char === '(') {
+                    const trailingNum = line.substring(lineIndex + 1).match(/[^)]+/);
+                    const closingBracket = line.substring(lineIndex + 1).match(/)/);
+                }
                 else if (char === '}') {
                     // Match end-definition
                     const trailingNum = line.substring(lineIndex + 1).match(/\d+/);
