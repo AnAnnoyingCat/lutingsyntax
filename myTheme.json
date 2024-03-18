@@ -1,0 +1,79 @@
+{
+    "name": "My Extended Theme",
+    "colors": {
+        "notecolor": "#643173",
+		"fractioncolor": "#7d5ba6",
+		"preferencescolor": "#333333",
+		"defcolor": "#86a59c",
+        "sectioncolor": "#86a59c",
+        "octavechangecolor": "#89ce94"
+    },
+    "tokenColors": [
+        {
+            "scope": "source note",
+            "settings": {
+                "foreground": "#32A0B6"
+            }
+        },
+        {
+            "scope": "source fraction",
+            "settings": {
+                "foreground": "#4AD9BA"
+            }
+        },
+        {
+            "scope": "source instrument",
+            "settings": {
+                "foreground": "#89CBD2"
+            }
+        },
+        {
+            "scope": "source octave",
+            "settings": {
+                "foreground": "#bfdbf7"
+            }
+        },
+        {
+            "scope": "source volume",
+            "settings": {
+                "foreground": "#bfdbf7"
+            }
+        },
+        {
+            "scope": "source time",
+            "settings": {
+                "foreground": "#bfdbf7"
+            }
+        },
+        {
+            "scope": "source start-definition",
+            "settings": {
+                "foreground": "#CEC267"
+            }
+        },
+        {
+            "scope": "source end-definition",
+            "settings": {
+                "foreground": "#CEC267"
+            }
+        },
+        {
+            "scope": "source predefined-section",
+            "settings": {
+                "foreground": "#CEC267"
+            }
+        },
+        {
+            "scope": "source octaveChange",
+            "settings": {
+                "foreground": "#4AD988"
+            }
+        },
+        {
+            "scope": "source lutingheader",
+            "settings": {
+                "foreground": "#C38EFF"
+            }
+        }
+    ]
+}

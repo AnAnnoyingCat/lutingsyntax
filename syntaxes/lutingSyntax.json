@@ -1,0 +1,61 @@
+{
+	"name": "lutingsyntax",
+	"scopeName": "source.luting",
+	"fileTypes": [".lute"],
+	"patterns": [
+	  {
+		"name": "instrument",
+		"match": "i\\w"
+	  },
+	  {
+		"name": "octave",
+		"match": "o\\d"
+	  },
+	  {
+		"name": "volume",
+		"match": "v\\d"
+	  },
+	  {
+		"name": "time",
+		"match": "t\\d+"
+	  },
+	  {
+		"name": "fraction",
+		"match": "(?:\\d+/\\d+|\\d+|/\\d+)"
+	  },
+	  {
+		"name": "note",
+		"match": "[a-g]'?|r",
+		"patterns":[
+			{
+				"include": "fraction"
+			}
+		]
+	  },
+	  {
+		"name": "start-definition",
+		"match": "[A-Z]\\{"
+	  },
+	  {
+		"name": "end-definition",
+		"match": "\\}"
+	  },
+	  {
+	  "name": "predefined-section",
+	  "match": "[A-Z]"
+	  },
+	  {
+		"name": "newVoice",
+		"match": "\\|"
+	  },
+	  {
+		"name": "octaveChange",
+		"match": "<|>"
+	  },
+	  {
+		"name": "lutingheader",
+		"match": "#lute \\d+"
+	  }
+	]
+  }
+  
