@@ -16,16 +16,21 @@
 		"match": "v\\d"
 	  },
 	  {
-		"name": "time",
-		"match": "t\\d+"
-	  },
-	  {
 		"name": "fraction",
 		"match": "(?:\\d+/\\d+|\\d+|/\\d+)"
 	  },
 	  {
 		"name": "note",
 		"match": "[a-g]'?|r",
+		"patterns":[
+			{
+				"include": "fraction"
+			}
+		]
+	  },
+	  {
+		"name": "time",
+		"match": "t",
 		"patterns":[
 			{
 				"include": "fraction"
@@ -41,8 +46,8 @@
 		"match": "\\}\\d*"
 	  },
 	  {
-	  "name": "predefined-section",
-	  "match": "[A-Z]\\d*"
+	  	"name": "predefined-section",
+	  	"match": "[A-Z]\\d*"
 	  },
 	  {
 		"name": "newVoice",

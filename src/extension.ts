@@ -1,24 +1,94 @@
 import * as vscode from 'vscode';
 import { printTokens } from './Language/tokenPrinter';
+import { lutingToken } from './Language/myTokenParser';
+import { myLuteDocumentSemanticTokensProvider } from './Language/myTokenParser';
+import * as helper from "./Optimizer/helperFunctions";
+
 export function activate(context: vscode.ExtensionContext) {
     console.log("activate was called");
     // Register a language feature provider for the lute language
-    const command = 'lutingsyntax.printTokens';
-    const commandHandler = async () => {
+    const printTokensCommand = 'lutingsyntax.printTokens';
+    const printTokensCommandHandler = async () => {
         // Get the active text editor
         const editor = vscode.window.activeTextEditor;
         if (editor) {
-            // Get the URI of the active document
+            // Get the current tokens of the active document
             const documentUri = editor.document.uri;
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            let myTokens: lutingToken[] = new myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
 
-            // Call the printTokens function with the document URI
-            await printTokens(documentUri);
+            // Call the printTokens function with the tokens
+            await printTokens(myTokens);
         } else {
             vscode.window.showErrorMessage('No active text editor found.');
         }
     };
-    // Add the disposable to the context subscriptions
-    context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));
+
+    const tokenizeAndBack = 'lutingsyntax.fwbwtokenize';
+    const fwbwtokenizeHandler = async () => {
+        // Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            // Get the current tokens of the active document
+            const documentUri = editor.document.uri;
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            let myTokens: lutingToken[] = new myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+
+            // Call the timingExpander functino with the tokens
+            const decodedString = helper.tokensToString(myTokens);
+
+            //write back into the document
+            editor.edit(editBuilder => {
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const end = lastLine.range.end;
+                editBuilder.insert(end, '\n\n' + decodedString + '\n');
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage("Let's hope it still sounds decent hryLaf");
+                } else {
+                    vscode.window.showErrorMessage("Failed to add the unjambled luting to the file");
+                }
+            });
+
+        } else {
+            vscode.window.showErrorMessage('No active text editor found.');
+        }
+    };
+    
+    const expandDefinitionsCommand = 'lutingsyntax.expandDefinitions';
+    const expandDefinitionsCommandHandler = async () => {
+        // Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            // Get the current tokens of the active document
+            const documentUri = editor.document.uri;
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            let myTokens: lutingToken[] = new myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+
+            // Call the timingExpander functino with the tokens
+            const expandedString = helper.expandDefinitions(myTokens);
+
+            //write back into the document
+            editor.edit(editBuilder => {
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const end = lastLine.range.end;
+                editBuilder.insert(end, '\n\n' + expandedString + '\n');
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage("Let's hope it still sounds decent hryLaf");
+                } else {
+                    vscode.window.showErrorMessage("Failed to add the unjambled luting to the file");
+                }
+            });
+
+        } else {
+            vscode.window.showErrorMessage('No active text editor found.');
+        }
+    };
+    // Add the commands to the context subscriptions
+    context.subscriptions.push(vscode.commands.registerCommand(printTokensCommand, printTokensCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(tokenizeAndBack, fwbwtokenizeHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(expandDefinitionsCommand, expandDefinitionsCommandHandler));
 }
 
 

@@ -35,7 +35,15 @@
     "commands": [
       {
         "command": "lutingsyntax.printTokens",
-        "title": "Luting: print all tokens"
+        "title": "Luting: Print all tokens"
+      },
+      {
+        "command": "lutingsyntax.fwbwtokenize",
+        "title": "Luting: tokenize and back your luting."
+      },
+      {
+        "command": "lutingsyntax.expandDefinitions",
+        "title": "Luting: Expand all defined letters into the full sections"
       }
     ]
   },

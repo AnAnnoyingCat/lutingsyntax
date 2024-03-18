@@ -14,7 +14,12 @@ import * as vscode from 'vscode';
     'octave-change',
     'luting-header'
 */
+
 export class lutingToken{
+     /*
+     /This is a small custom class wich encapsulates what it means to be a luting token
+     /
+    */
 	length: number;
 	type: string;
 	content: string;
@@ -28,6 +33,10 @@ export class lutingToken{
 // Implement the document semantic tokens provider
 export class myLuteDocumentSemanticTokensProvider {
     provideDocumentSemanticTokens(document: vscode.TextDocument, token: vscode.CancellationToken): lutingToken[] {
+             /*
+             /This function takes a document and tokenizes it into my lutingToken class. It returns an array of said class.
+             /
+            */
         const lutingTokens: lutingToken[] = [];
 
         const text = document.getText();
@@ -46,8 +55,8 @@ export class myLuteDocumentSemanticTokensProvider {
                     lineIndex++;
                 } else if (char.match(/[A-Z]/)) {
                     // Match predefined section
-					const trailingNum = line.substring(lineIndex+1).match(/\d+/);
-					if (char && line.substring(lineIndex+1) === '{'){
+                    const trailingNum = line.substring(lineIndex+1).match(/^\d+/);
+					if (char && line.substring(lineIndex+1, lineIndex+2) === '{'){
 						const fullString = char.concat("{");
 						lutingTokens.push(new lutingToken(fullString , "start-definition"));
 						lineIndex += fullString.length;
@@ -62,13 +71,26 @@ export class myLuteDocumentSemanticTokensProvider {
 						lineIndex += fullString.length;
 					} 
                 } else if(char === '('){
-                    const trailingNum = line.substring(lineIndex+1).match(/[^)]+/);
-                    const closingBracket = line.substring(lineIndex+1).match(/)/);
+                    //Match chord
+                    const chord = line.substring(lineIndex+1).match(/[^)]+/);
+                    const closingBracket = line.substring(lineIndex+1).match(/\)/);
+                    if (chord && closingBracket){
+                        const trailingFrac = line.substring(lineIndex + chord[0].length + 2).match(/^(\d+\/\d+|\d+|\/\d+)/);
+                        if (trailingFrac){
+                            const fullString = "(".concat(chord[0].toString()).concat(closingBracket[0].toString()).concat(trailingFrac[0].toString());
+                            lutingTokens.push(new lutingToken(fullString, "chord"));
+                            lineIndex += fullString.length;
+                        } else {
+                            const fullString = "(".concat(chord[0].toString()).concat(closingBracket[0].toString());
+                            lutingTokens.push(new lutingToken(fullString, "chord"));
+                            lineIndex += fullString.length;
+                        }
+                    }
                 } else if (char === '}') {
                     // Match end-definition
-					const trailingNum = line.substring(lineIndex+1).match(/\d+/);
+                    const trailingNum = line.substring(lineIndex+1).match(/^\d+/);
 					if (trailingNum){
-						const fullString = char.concat(trailingNum.toString());
+						const fullString = char.concat(trailingNum[0].toString());
 						lutingTokens.push(new lutingToken(fullString, "end-definition"));
 						lineIndex += fullString.length;
 					} else {
@@ -81,8 +103,15 @@ export class myLuteDocumentSemanticTokensProvider {
                     lineIndex++;
                 } else if (char === '<' || char === '>') {
                     // Match octave-change
-                    lutingTokens.push(new lutingToken(char, "octave-change"));
-                    lineIndex++;
+                    const trailingNum = line.substring(lineIndex+1).match(/^\d+/);
+                    if (trailingNum){
+                        const fullString = char.concat(trailingNum[0].toString());
+                        lutingTokens.push(new lutingToken(fullString, "octave-change"));
+                        lineIndex += fullString.length;
+                    } else {
+                        lutingTokens.push(new lutingToken(char, "octave-change"));
+                        lineIndex++;
+                    }
                 } else if (char === '#' && line.substring(lineIndex).match(/^#lute \d+/)) {
                     // Match luting-header
                     const match = line.substring(lineIndex).match(/^#lute \d+/);
@@ -111,28 +140,29 @@ export class myLuteDocumentSemanticTokensProvider {
                         lutingTokens.push(new lutingToken(match[0], "instrument"));
                         lineIndex += match[0].length;
                     }
-                } else if (char === 'o' && line.substring(lineIndex).match(/^o\d/)) {
+                } else if (char === 'o') {
                     // Match octave
                     const match = line.substring(lineIndex).match(/^o\d/);
                     if (match) {
                         lutingTokens.push(new lutingToken(match[0], "octave"));
                         lineIndex += match[0].length;
                     }
-                } else if (char === 'v' && line.substring(lineIndex).match(/^v\d/)) {
+                } else if (char === 'v') {
                     // Match volume
-                    const match = line.substring(lineIndex).match(/^v\d/);
+                    const match = line.substring(lineIndex).match(/^v\d?/);
                     if (match) {
                         lutingTokens.push(new lutingToken(match[0], "volume"));
                         lineIndex += match[0].length;
                     }
-                } else if (char === 't' && line.substring(lineIndex).match(/^t\d+/)) {
+                } else if (char === 't') {
                     // Match time
-                    const match = line.substring(lineIndex).match(/^t\d+/);
-                    if (match) {
-                        lutingTokens.push(new lutingToken(match[0], "time"));
-                        lineIndex += match[0].length;
+                    const trailingFrac = line.substring(lineIndex+1).match(/^(\d+\/\d+|\d+|\/\d+)/);
+                    if (trailingFrac) {
+                        const fullString = char.concat(trailingFrac[0].toString());
+                        lutingTokens.push(new lutingToken(fullString, "time"));
+                        lineIndex += fullString.length;
                     }
-                } else if (char.match(/\d+\/\d+|\d+|\/\d+/)) {
+                } else if (char.match(/\d/)) {
                     // Match fraction
                     const match = line.substring(lineIndex).match(/^(\d+\/\d+|\d+|\/\d+)/);
                     if (match) {
@@ -143,11 +173,11 @@ export class myLuteDocumentSemanticTokensProvider {
                     }
                 } else {
                     // Unrecognized token
+                    console.error("unrecognized token: ".concat(char.toString()));
                     lineIndex++;
                 }
             }
         }
-
         return lutingTokens;
     }
 }
