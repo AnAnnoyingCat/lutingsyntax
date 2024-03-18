@@ -18,13 +18,14 @@ export async function printTokens(documentUri: vscode.Uri): Promise<void> {
         // Get the tokens for the document
         const tokens = await tokenProvider.provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
         const myTokens = await myTokenProvider.provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
-        
-        if (tokens) {
+
+        if (myTokens) {
             // Iterate over the data array and print each token
-            for (let i = 0; i < tokens.data.length; i++) {
-                const token = tokens.data[i];
-                console.log(lutingTokenLegend.tokenTypes[token]); // Or use console.log(JSON.stringify(token)) for better formatting
+            let str = "";
+            for (let i = 0; i < myTokens.length; i++) {
+                console.log(myTokens[i].content);
             }
+            console.log(str);
         } else {
             console.error('Tokens is null or undefined.');
         }

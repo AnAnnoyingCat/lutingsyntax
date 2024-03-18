@@ -27,7 +27,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.printTokens = void 0;
 const vscode = __importStar(require("vscode"));
 const tokenParser_1 = require("./tokenParser"); // Import the token parser
-const tokenParser_2 = require("./tokenParser");
 const myTokenParser_1 = require("./myTokenParser");
 async function printTokens(documentUri) {
     try {
@@ -39,12 +38,13 @@ async function printTokens(documentUri) {
         // Get the tokens for the document
         const tokens = await tokenProvider.provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
         const myTokens = await myTokenProvider.provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
-        if (tokens) {
+        if (myTokens) {
             // Iterate over the data array and print each token
-            for (let i = 0; i < tokens.data.length; i++) {
-                const token = tokens.data[i];
-                console.log(tokenParser_2.lutingTokenLegend.tokenTypes[token]); // Or use console.log(JSON.stringify(token)) for better formatting
+            let str = "";
+            for (let i = 0; i < myTokens.length; i++) {
+                console.log(myTokens[i].content);
             }
+            console.log(str);
         }
         else {
             console.error('Tokens is null or undefined.');

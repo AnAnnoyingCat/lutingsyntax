@@ -63,8 +63,15 @@ export class myLuteDocumentSemanticTokensProvider {
 					} 
                 } else if (char === '}') {
                     // Match end-definition
-                    lutingTokens.push(new lutingToken(char, "end-definition"));
-                    lineIndex++;
+					const trailingNum = line.substring(lineIndex+1).match(/\d+/);
+					if (trailingNum){
+						const fullString = char.concat(trailingNum.toString());
+						lutingTokens.push(new lutingToken(fullString, "end-definition"));
+						lineIndex += fullString.length;
+					} else {
+                    	lutingTokens.push(new lutingToken(char, "end-definition"));
+                    	lineIndex++;
+					}
                 } else if (char === '|') {
                     // Match new-voice
                     lutingTokens.push(new lutingToken(char, "new-voice"));
