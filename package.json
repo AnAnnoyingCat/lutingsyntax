@@ -39,7 +39,7 @@
       },
       {
         "command": "lutingsyntax.fwbwtokenize",
-        "title": "Luting: tokenize and back your luting."
+        "title": "Luting: Tokenize and back your luting."
       },
       {
         "command": "lutingsyntax.expandDefinitions",

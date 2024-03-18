@@ -116,7 +116,7 @@ export class myLuteDocumentSemanticTokensProvider {
                     // Match luting-header
                     const match = line.substring(lineIndex).match(/^#lute \d+/);
                     if (match) {
-                        lutingTokens.push(new lutingToken(match[0], "luting-header"));
+                        lutingTokens.push(new lutingToken(match[0].concat(" "), "luting-header"));
                         lineIndex += match[0].length;
                     }
                 } else if (char.match(/([a-g]'?|r)/)) {

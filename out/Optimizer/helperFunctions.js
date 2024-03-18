@@ -4,12 +4,7 @@ exports.expandDefinitions = exports.tokensToString = void 0;
 function tokensToString(tokens) {
     let returnString = "";
     for (var token of tokens) {
-        if (token.type === 'luting-header') {
-            returnString = returnString.concat(token.content.toString(), " ");
-        }
-        else {
-            returnString = returnString.concat(token.content.toString());
-        }
+        returnString = returnString.concat(token.content.toString());
     }
     return returnString;
 }
@@ -21,9 +16,8 @@ function expandDefinitions(tokens) {
     let currentDefinition = [];
     for (var token of tokens) {
         if (inDefinition > 0) {
-            //currently making some definitions so add the current token accordingly
-            for (var d of currentDefinition) {
-                d = d.concat(token.content.toString());
+            if (!(token.type === 'end-definition' || token.type === 'start-definition' || token.type === 'predefined-section')) {
+                currentDefinition[currentDefinition.length - 1] = currentDefinition[currentDefinition.length - 1].concat(token.content.toString());
             }
         }
         //now we finally take care of any new definitions or definitions which need expanding
@@ -37,24 +31,37 @@ function expandDefinitions(tokens) {
             }
             inDefinition++;
         }
-        if (token.type === 'predefined-section') {
+        else if (token.type === 'predefined-section') {
             //a defined section! let's expand it!
             const defName = token.content.match(/[A-Z]/);
             const repetitions = token.content.match(/\d+/);
             if (defName) {
+                const definedValue = definitionLookup[defName[0].toString()].toString();
                 if (repetitions) {
-                    for (let i = 0; i < +repetitions; i++) {
-                        res = res.concat(definitionLookup[defName.toString()].toString());
+                    if (inDefinition > 0) {
+                        for (let i = 0; i < +repetitions; i++) {
+                            currentDefinition[currentDefinition.length - 1] = currentDefinition[currentDefinition.length - 1].concat(definedValue);
+                        }
+                    }
+                    else {
+                        for (let i = 0; i < +repetitions; i++) {
+                            res = res.concat(definedValue);
+                        }
                     }
                 }
                 else {
-                    res = res.concat(definitionLookup[defName.toString()].toString());
+                    if (inDefinition > 0) {
+                        currentDefinition[currentDefinition.length - 1] = currentDefinition[currentDefinition.length - 1].concat(definedValue);
+                    }
+                    else {
+                        res = res.concat(definedValue);
+                    }
                 }
             }
         }
         else if (token.type === 'end-definition') {
-            //a definition just finished. This means we added a closing bracket to it which we shouldn't have. let's remove it
-            currentDefinition[currentDefinition.length - 1] = currentDefinition[currentDefinition.length - 1].substring(0, currentDefinition[currentDefinition.length - 1].length - 1);
+            //how many times we want the current definition to be written initially
+            const repetitions = token.content.match(/\d+/);
             inDefinition--;
             //the name of the new definition is defined as the first character of the last definition.
             const newDefName = currentDefinition[inDefinition].substring(0, 1);
@@ -63,10 +70,29 @@ function expandDefinitions(tokens) {
             //remove the definition from the array
             currentDefinition.splice(inDefinition);
             definitionLookup[newDefName] = newDefinition;
-            res.concat(token.content.toString());
+            if (repetitions) {
+                for (let i = 0; i < +repetitions[0]; i++) {
+                    if (inDefinition > 0) {
+                        currentDefinition[currentDefinition.length - 1] = currentDefinition[currentDefinition.length - 1].concat(definitionLookup[newDefName]);
+                    }
+                    else {
+                        res = res.concat(definitionLookup[newDefName.toString()].toString());
+                    }
+                }
+            }
+            else {
+                if (inDefinition > 0) {
+                    currentDefinition[currentDefinition.length - 1] = currentDefinition[currentDefinition.length - 1].concat(definitionLookup[newDefName]);
+                }
+                else {
+                    res = res.concat(definitionLookup[newDefName.toString()].toString());
+                }
+            }
         }
         else {
-            res = res.concat(token.content.toString());
+            if (inDefinition === 0) {
+                res = res.concat(token.content.toString());
+            }
         }
     }
     return res;

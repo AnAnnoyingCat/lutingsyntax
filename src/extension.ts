@@ -75,7 +75,7 @@ export function activate(context: vscode.ExtensionContext) {
                 editBuilder.insert(end, '\n\n' + expandedString + '\n');
             }).then(success => {
                 if (success) {
-                    vscode.window.showInformationMessage("Let's hope it still sounds decent hryLaf");
+                    vscode.window.showInformationMessage("Let's hope it doesn't fuck up...");
                 } else {
                     vscode.window.showErrorMessage("Failed to add the unjambled luting to the file");
                 }
