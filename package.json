@@ -31,6 +31,12 @@
         "uiTheme": "vs-dark",
         "path": "./modifiedOneDarkProMix.json"
       }
+    ],
+    "commands": [
+      {
+        "command": "lutingsyntax.printTokens",
+        "title": "Luting: print all tokens"
+      }
     ]
   },
   "scripts": {

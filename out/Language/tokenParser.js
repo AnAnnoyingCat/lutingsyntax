@@ -23,10 +23,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LuteDocumentSemanticTokensProvider = void 0;
+exports.LuteDocumentSemanticTokensProvider = exports.lutingTokenLegend = void 0;
 const vscode = __importStar(require("vscode"));
 // Define the token legend
-const legend = new vscode.SemanticTokensLegend([
+exports.lutingTokenLegend = new vscode.SemanticTokensLegend([
     'instrument',
     'octave',
     'volume',
@@ -44,7 +44,7 @@ const legend = new vscode.SemanticTokensLegend([
 class LuteDocumentSemanticTokensProvider {
     provideDocumentSemanticTokens(document, token) {
         // Tokenize the document
-        const tokensBuilder = new vscode.SemanticTokensBuilder(legend);
+        const tokensBuilder = new vscode.SemanticTokensBuilder(exports.lutingTokenLegend);
         const text = document.getText();
         const lines = text.split('\n');
         for (let i = 0; i < lines.length; i++) {

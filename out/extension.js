@@ -27,8 +27,10 @@ exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const tokenPrinter_1 = require("./Language/tokenPrinter");
 function activate(context) {
+    console.log("activate was called");
     // Register a language feature provider for the lute language
-    let disposable = vscode.commands.registerCommand('extension.printTokens', async () => {
+    const command = 'lutingsyntax.printTokens';
+    const commandHandler = async () => {
         // Get the active text editor
         const editor = vscode.window.activeTextEditor;
         if (editor) {
@@ -40,9 +42,9 @@ function activate(context) {
         else {
             vscode.window.showErrorMessage('No active text editor found.');
         }
-    });
+    };
     // Add the disposable to the context subscriptions
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(vscode.commands.registerCommand(command, commandHandler));
 }
 exports.activate = activate;
 /*

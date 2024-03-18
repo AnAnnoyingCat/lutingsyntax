@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 
-// Define the token legend
-export const lutingTokenLegend = new vscode.SemanticTokensLegend([
-    'instrument',
+/* All the possible types of tokens:
+    'instrument'
     'octave',
     'volume',
     'time',
@@ -11,16 +10,25 @@ export const lutingTokenLegend = new vscode.SemanticTokensLegend([
     'start-definition',
     'end-definition',
     'predefined-section',
-    'newVoice',
-    'octaveChange',
-    'lutingheader'
-]);
+    'new-voice',
+    'octave-change',
+    'luting-header'
+*/
+export class lutingToken{
+	length: number;
+	type: string;
+	content: string;
 
+	constructor(content: string, type: string){
+		this.content = content;
+		this.type = type;
+		this.length = content.length;
+	}
+}
 // Implement the document semantic tokens provider
-export class LuteDocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
-    provideDocumentSemanticTokens(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SemanticTokens> {
-        // Tokenize the document
-        const tokensBuilder = new vscode.SemanticTokensBuilder(lutingTokenLegend);
+export class myLuteDocumentSemanticTokensProvider {
+    provideDocumentSemanticTokens(document: vscode.TextDocument, token: vscode.CancellationToken): lutingToken[] {
+        const lutingTokens: lutingToken[] = [];
 
         const text = document.getText();
         const lines = text.split('\n');
@@ -38,74 +46,89 @@ export class LuteDocumentSemanticTokensProvider implements vscode.DocumentSemant
                     lineIndex++;
                 } else if (char.match(/[A-Z]/)) {
                     // Match predefined section
-                    const match = line.substring(lineIndex).match(/^[A-Z]/);
-                    if (match) {
-                        tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + match[0].length)), 'predefined-section');
-                        lineIndex += match[0].length;
-                    }
-                } else if (char === '{') {
-                    // Match start-definition
-                    tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + 1)), 'start-definition');
-                    lineIndex++;
+					const trailingNum = line.substring(lineIndex+1).match(/\d+/);
+					if (char && line.substring(lineIndex+1) === '{'){
+						const fullString = char.concat("{");
+						lutingTokens.push(new lutingToken(fullString , "start-definition"));
+						lineIndex += fullString.length;
+					} else if (char) {
+						let fullString = "";
+						if (trailingNum){
+							fullString = char.concat(trailingNum[0].toString());
+						} else {
+							fullString = char;
+						}
+						lutingTokens.push(new lutingToken(fullString , "predefined-section"));
+						lineIndex += fullString.length;
+					} 
                 } else if (char === '}') {
                     // Match end-definition
-                    tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + 1)), 'end-definition');
+                    lutingTokens.push(new lutingToken(char, "end-definition"));
                     lineIndex++;
                 } else if (char === '|') {
-                    // Match newVoice
-                    tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + 1)), 'newVoice');
+                    // Match new-voice
+                    lutingTokens.push(new lutingToken(char, "new-voice"));
                     lineIndex++;
                 } else if (char === '<' || char === '>') {
-                    // Match octaveChange
-                    tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + 1)), 'octaveChange');
+                    // Match octave-change
+                    lutingTokens.push(new lutingToken(char, "octave-change"));
                     lineIndex++;
                 } else if (char === '#' && line.substring(lineIndex).match(/^#lute \d+/)) {
-                    // Match lutingheader
+                    // Match luting-header
                     const match = line.substring(lineIndex).match(/^#lute \d+/);
                     if (match) {
-                        tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + match[0].length)), 'lutingheader');
+                        lutingTokens.push(new lutingToken(match[0], "luting-header"));
                         lineIndex += match[0].length;
                     }
-                } else if (char.match(/[a-g]'?|r/)) {
+                } else if (char.match(/([a-g]'?|r)/)) {
                     // Match note
                     const match = line.substring(lineIndex).match(/^[a-g]'?|r/);
                     if (match) {
-                        tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + match[0].length)), 'note');
-                        lineIndex += match[0].length;
+						const trailingFrac = line.substring(lineIndex + match[0].length).match(/^(\d+\/\d+|\d+|\/\d+)/);
+						if (trailingFrac){
+							const fullNote = match[0].concat(trailingFrac[0].toString());
+							lutingTokens.push(new lutingToken(fullNote, "note"));
+							lineIndex += fullNote.length;
+						} else {
+							lutingTokens.push(new lutingToken(match[0], "note"));
+							lineIndex += match[0].length;
+						}
                     }
                 } else if (char === 'i') {
                     // Match instrument
                     const match = line.substring(lineIndex).match(/^i\w/);
                     if (match) {
-                        tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + match[0].length)), 'instrument');
+                        lutingTokens.push(new lutingToken(match[0], "instrument"));
                         lineIndex += match[0].length;
                     }
                 } else if (char === 'o' && line.substring(lineIndex).match(/^o\d/)) {
                     // Match octave
                     const match = line.substring(lineIndex).match(/^o\d/);
                     if (match) {
-                        tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + match[0].length)), 'octave');
+                        lutingTokens.push(new lutingToken(match[0], "octave"));
                         lineIndex += match[0].length;
                     }
                 } else if (char === 'v' && line.substring(lineIndex).match(/^v\d/)) {
                     // Match volume
                     const match = line.substring(lineIndex).match(/^v\d/);
                     if (match) {
-                        tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + match[0].length)), 'volume');
+                        lutingTokens.push(new lutingToken(match[0], "volume"));
                         lineIndex += match[0].length;
                     }
                 } else if (char === 't' && line.substring(lineIndex).match(/^t\d+/)) {
                     // Match time
                     const match = line.substring(lineIndex).match(/^t\d+/);
                     if (match) {
-                        tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + match[0].length)), 'time');
+                        lutingTokens.push(new lutingToken(match[0], "time"));
                         lineIndex += match[0].length;
                     }
                 } else if (char.match(/\d+\/\d+|\d+|\/\d+/)) {
                     // Match fraction
                     const match = line.substring(lineIndex).match(/^(\d+\/\d+|\d+|\/\d+)/);
                     if (match) {
-                        tokensBuilder.push(new vscode.Range(new vscode.Position(i, lineIndex), new vscode.Position(i, lineIndex + match[0].length)), 'fraction');
+						//shouldn't get here!
+						console.log("oopsie woopsie found a fraction");
+                        lutingTokens.push(new lutingToken(match[0], "fraction"));
                         lineIndex += match[0].length;
                     }
                 } else {
@@ -115,6 +138,6 @@ export class LuteDocumentSemanticTokensProvider implements vscode.DocumentSemant
             }
         }
 
-        return tokensBuilder.build();
+        return lutingTokens;
     }
 }

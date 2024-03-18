@@ -27,19 +27,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.printTokens = void 0;
 const vscode = __importStar(require("vscode"));
 const tokenParser_1 = require("./tokenParser"); // Import the token parser
+const tokenParser_2 = require("./tokenParser");
+const myTokenParser_1 = require("./myTokenParser");
 async function printTokens(documentUri) {
     try {
         // Load the document
         const document = await vscode.workspace.openTextDocument(documentUri);
         // Create an instance of the token provider
         const tokenProvider = new tokenParser_1.LuteDocumentSemanticTokensProvider();
+        const myTokenProvider = new myTokenParser_1.myLuteDocumentSemanticTokensProvider();
         // Get the tokens for the document
         const tokens = await tokenProvider.provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+        const myTokens = await myTokenProvider.provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
         if (tokens) {
             // Iterate over the data array and print each token
             for (let i = 0; i < tokens.data.length; i++) {
                 const token = tokens.data[i];
-                console.log(token); // Or use console.log(JSON.stringify(token)) for better formatting
+                console.log(tokenParser_2.lutingTokenLegend.tokenTypes[token]); // Or use console.log(JSON.stringify(token)) for better formatting
             }
         }
         else {
