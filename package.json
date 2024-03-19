@@ -2,7 +2,7 @@
   "name": "lutingsyntax",
   "displayName": "LutingInVSCode",
   "description": "Extension to write and modify lutings in VSCode using the .lute file format.",
-  "icon": "./extensionIcon.png",
+  "icon": "./luting.png",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.87.0"
