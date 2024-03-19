@@ -171,34 +171,47 @@ function expandTimings(tokens) {
     return tokens;
 }
 exports.expandTimings = expandTimings;
-function findAndSortSubstrings(inputLuting) {
-    // Create a Map to store substrings and their counts
-    const substringCounts = new Map();
-    // Iterate through the input array to find all substrings
-    for (let i = 0; i < inputLuting.length; i++) {
-        let substring = '';
-        for (let j = i; j < inputLuting.length; j++) {
-            substring += inputLuting[j].content.toString();
-            if (!substringCounts.has(substring)) {
-                substringCounts.set(substring, 1);
+function calculateUniqueSubstrings(tokens) {
+    const substringsSet = new Set();
+    // Calculate all substrings
+    for (let i = 0; i < tokens.length; i++) {
+        for (let j = i; j < tokens.length; j++) {
+            let substring = "";
+            let legal = true;
+            let inDef = 0;
+            for (let k = i; k <= j; k++) {
+                if (tokens[k].type === 'new-voice') {
+                    legal = false;
+                    break;
+                }
+                else if (tokens[k].type === 'start-definition') {
+                    inDef++;
+                }
+                else if (tokens[k].type === 'end-definition') {
+                    if (inDef === 0) {
+                        legal = false;
+                        break;
+                    }
+                    inDef--;
+                }
+                substring += tokens[k].content.toString();
             }
-            else {
-                substringCounts.set(substring, substringCounts.get(substring) + 1);
+            if (legal) {
+                substringsSet.add(substring);
             }
         }
     }
-    // Filter substrings that occur more than once
-    const repeatedSubstrings = new Map([...substringCounts].filter(([_, count]) => count > 1));
+    // Convert set to array
+    const substringsArray = Array.from(substringsSet);
     // Calculate gain for each substring
-    const substringToGain = new Map();
-    for (const [substring, count] of repeatedSubstrings) {
+    const substringsWithGain = substringsArray.map(substring => {
+        const occurrences = tokensToString(tokens).split(substring).length - 1;
         const length = substring.length;
-        const gain = count * length - (length + count - 2);
-        substringToGain.set(substring, gain);
-    }
-    // Sort the substrings by gain
-    const sortedSubstrings = new Map([...substringToGain.entries()].sort((a, b) => b[1] - a[1]));
-    return sortedSubstrings;
+        const gain = (occurrences * length) - (length + occurrences - 2);
+        return { substring, gain };
+    });
+    substringsWithGain.sort((a, b) => b.gain - a.gain);
+    return substringsWithGain;
 }
 function countOccurrencesOfSubStrings(tokens) {
     let occurrences = new Map();
@@ -275,12 +288,17 @@ function optimize(tokens, maxItr) {
     for (let i = 0; i < maxItr; i++) {
         let occurrences = countOccurrencesOfSubStrings(tokens);
         let gain = calculateGainFromOccurrences(occurrences);
-        let sortedSubstrings = findAndSortSubstrings(tokens);
+        let sortedSubstrings = calculateUniqueSubstrings(tokens);
+        if (sortedSubstrings[0].gain <= 0) {
+            //no more optimizations possible!
+            break;
+        }
         if (gain.values().next().value <= 0) {
             //no more optimizations possible!
             break;
         }
-        let best = gain.keys().next().value;
+        //let best: string = gain.keys().next().value;
+        let best = sortedSubstrings[0].substring;
         let stringToModify = tokensToString(tokens);
         let localPosition = isLocalDef(stringToModify, best);
         let definitionName = "";
