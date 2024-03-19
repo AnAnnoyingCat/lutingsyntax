@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.expandDefinitions = exports.equalTokens = exports.tokensToString = void 0;
+exports.expandTimings = exports.finalizeLuting = exports.removeComments = exports.expandDefinitions = exports.equalTokens = exports.tokensToString = void 0;
 function tokensToString(tokens) {
     let returnString = "";
     for (var token of tokens) {
@@ -110,4 +110,52 @@ function expandDefinitions(tokens) {
     return res;
 }
 exports.expandDefinitions = expandDefinitions;
+function removeComments(tokens) {
+    for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i].type === 'comment') {
+            tokens.splice(i, 1);
+            i--;
+        }
+    }
+    return tokens;
+}
+exports.removeComments = removeComments;
+function finalizeLuting(tokens) {
+    removeComments(tokens);
+    return tokensToString(tokens);
+}
+exports.finalizeLuting = finalizeLuting;
+function expandTimings(tokens) {
+    //only works on lutings which had their definition expanded!
+    let currentTime = "1";
+    for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i].type === 'time') {
+            const newTime = tokens[i].content.match(/(\d+\/\d+|\d+|\/\d+)/);
+            if (newTime) {
+                currentTime = newTime[0].toString();
+                tokens.splice(i, 1);
+                i--;
+            }
+            else {
+                console.error("didn't find new time hryElp");
+            }
+        }
+        else if (tokens[i].type === 'note') {
+            const frac = tokens[i].content.match(/(\d+\/\d+|\d+|\/\d+)/);
+            if (!frac) {
+                //note has no fraction
+                const note = tokens[i].content.match(/([a-g]'?|r)/);
+                if (note) {
+                    const newNote = note[0].toString().concat(currentTime);
+                    tokens[i].content = newNote;
+                }
+            }
+        }
+        else if (tokens[i].type === 'new-voice') {
+            currentTime = "1";
+        }
+    }
+    return tokens;
+}
+exports.expandTimings = expandTimings;
 //# sourceMappingURL=helperFunctions.js.map

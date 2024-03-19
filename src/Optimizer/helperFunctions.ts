@@ -103,3 +103,49 @@ export function expandDefinitions(tokens: lutingToken[]): string{
 	}
 	return res;
 }
+
+export function removeComments(tokens: lutingToken[]): lutingToken[]{
+	for (let i = 0; i < tokens.length; i++){
+		if (tokens[i].type === 'comment'){
+			tokens.splice(i, 1);
+			i--;
+		}
+	}
+	return tokens;
+}
+
+export function finalizeLuting(tokens: lutingToken[]): string{
+	removeComments(tokens);
+	return tokensToString(tokens);
+}
+
+export function expandTimings(tokens: lutingToken[]): lutingToken[]{
+	//only works on lutings which had their definition expanded!
+	let currentTime = "1";
+	for (let i = 0; i < tokens.length; i++){
+		if (tokens[i].type === 'time'){
+			const newTime = tokens[i].content.match(/(\d+\/\d+|\d+|\/\d+)/);
+			if (newTime){
+				currentTime = newTime[0].toString();
+				tokens.splice(i, 1);
+				i--;
+			} else {
+				console.error("didn't find new time hryElp");
+			}
+		} else if (tokens[i].type === 'note'){
+			const frac = tokens[i].content.match(/(\d+\/\d+|\d+|\/\d+)/);
+			if (!frac){
+				//note has no fraction
+				const note = tokens[i].content.match(/([a-g]'?|r)/);
+				if (note){
+					const newNote = note[0].toString().concat(currentTime);
+					tokens[i].content = newNote;
+				}
+			}
+		} else if (tokens[i].type ==='new-voice'){
+			currentTime = "1";
+		}
+	}
+
+	return tokens;
+}

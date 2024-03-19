@@ -48,6 +48,10 @@
       {
         "command": "lutingsyntax.testCommand",
         "title": "Luting: Execute test command"
+      },
+      {
+        "command": "lutingsyntax.finalize",
+        "title": "Luting: Finalize your luting!"
       }
     ]
   },
