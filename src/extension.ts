@@ -47,11 +47,13 @@ export function activate(context: vscode.ExtensionContext) {
                 editBuilder.insert(end, '\n' + finalizedString + '\n');
             }).then(success => {
                 if (success) {
-                    vscode.window.showInformationMessage("Hope it sounds good! hryAdmire");
+                    vscode.window.showInformationMessage("Copied to Clipboard, Hope it sounds good! hryAdmire");
                 } else {
                     vscode.window.showErrorMessage("Failed to writeback");
                 }
             });
+            vscode.env.clipboard.writeText(finalizedString);
+
 
         } else {
             vscode.window.showErrorMessage('No active text editor found.');
@@ -137,18 +139,13 @@ export function activate(context: vscode.ExtensionContext) {
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
-            helper.removeComments(myTokens);
-            myTokens = provideLutingTokensFromString(helper.expandDefinitions(myTokens));
-            helper.optimize(myTokens, 5);
-
-            const occurrences = helper.countOccurrencesOfSubStrings(myTokens);
-            const gain = helper.calculateGainFromOccurrences(occurrences);
+            const optimizedResult = helper.optimize(myTokens, 5);
 
             //write back into the document
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);
                 const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + occurrences + '\n');
+                editBuilder.insert(end, '\n' + optimizedResult + '\n');
             }).then(success => {
                 if (success) {
                     vscode.window.showInformationMessage("Here are the test results!");

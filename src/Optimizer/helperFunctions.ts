@@ -160,6 +160,41 @@ export function expandTimings(tokens: lutingToken[]): lutingToken[]{
 	return tokens;
 }
 
+
+function findAndSortSubstrings(inputLuting: lutingToken[]): Map<string, number> {
+    // Create a Map to store substrings and their counts
+    const substringCounts: Map<string, number> = new Map();
+
+    // Iterate through the input array to find all substrings
+    for (let i = 0; i < inputLuting.length; i++) {
+        let substring = '';
+        for (let j = i; j < inputLuting.length; j++) {
+            substring += inputLuting[j].content.toString();
+            if (!substringCounts.has(substring)) {
+                substringCounts.set(substring, 1);
+            } else {
+                substringCounts.set(substring, substringCounts.get(substring)! + 1);
+            }
+        }
+    }
+
+    // Filter substrings that occur more than once
+    const repeatedSubstrings = new Map([...substringCounts].filter(([_, count]) => count > 1));
+
+    // Calculate gain for each substring
+    const substringToGain = new Map<string, number>();
+    for (const [substring, count] of repeatedSubstrings) {
+        const length = substring.length;
+        const gain = count * length - (length + count - 2);
+        substringToGain.set(substring, gain);
+    }
+
+    // Sort the substrings by gain
+    const sortedSubstrings = new Map([...substringToGain.entries()].sort((a, b) => b[1] - a[1]));
+
+    return sortedSubstrings;
+}
+
 export function countOccurrencesOfSubStrings(tokens: lutingToken[]): Map<string, number>{
 	let occurrences: Map<string, number> = new Map<string, number>();
 	for (let i = 0; i < tokens.length; i++){
@@ -203,7 +238,7 @@ export function countOccurrencesOfSubStrings(tokens: lutingToken[]): Map<string,
 export function calculateGainFromOccurrences(occurrences: Map<string, number>):  Map<string, number>{
 	let res : Map<string, number> = new Map<string, number>();
 	occurrences.forEach((value: number, key: string) => {
-		let gain = (value - 1) * key.length - key.length - 3; //net gain from defining a given key which has value occurrences.
+		let gain = (value * key.length) - (key.length + value + 2);
 		res.set(key, gain);
 	});
 	const sortedArray = Array.from(res).sort((a, b) => b[1] - a[1]);
@@ -212,8 +247,8 @@ export function calculateGainFromOccurrences(occurrences: Map<string, number>): 
 }
 
 export function optimize(tokens: lutingToken[], maxItr: number): string{
-	let globalDefsToUse: string[] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
-	let numVoices = 0;
+	let globalDefsToUse: string[] = ["Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A"];
+	let numVoices = 1;
 	for (let tk of tokens){
 		if (tk.type === 'new-voice'){
 			numVoices++;
@@ -223,7 +258,7 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 	for (let i = 0; i < numVoices; i++){
 		localDefsToUse[i] = [];
 		for (let j = globalDefsToUse.length - 1; j >= 0; j--){
-			localDefsToUse[i].unshift(globalDefsToUse[j]);
+			localDefsToUse[i].push(globalDefsToUse[j]);
 		}
 	}
 
@@ -232,6 +267,11 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 	for (let i = 0; i < maxItr; i++){
 		let occurrences = countOccurrencesOfSubStrings(tokens);
 		let gain = calculateGainFromOccurrences(occurrences);
+		let sortedSubstrings = findAndSortSubstrings(tokens);
+		if (gain.values().next().value <= 0){
+			//no more optimizations possible!
+			break;
+		}
 		let best: string = gain.keys().next().value;
 		let stringToModify = tokensToString(tokens);
 
@@ -239,35 +279,46 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		let definitionName = "";
 		if (localPosition < 0){
 			//not local
-			definitionName = localDefsToUse[localPosition][0];
-			localDefsToUse[localPosition].splice(0, 1);
-		} else {
 			definitionName = globalDefsToUse[0];
 			globalDefsToUse.splice(0, 1);
+			
+		} else {
+			definitionName = localDefsToUse[localPosition][0];
+			localDefsToUse[localPosition].splice(0, 1);
 		}
 
+		let substrPositions  = getIndicesOf(stringToModify, best);
+		let firstPos = stringToModify.indexOf(best);
 		let newDefinition = definitionName.concat("{", best, "}");
-		stringToModify.replace(best, newDefinition);
-		stringToModify.replace(/best/g, definitionName);
-		stringToModify.replace("{" + definitionName + "}", best);
+		let bestLength = best.length;
 		
-
-
-		//modify string according to best gain;
+		//base case: the definition
+		let before = stringToModify.slice(0, firstPos);
+		let after = stringToModify.slice(firstPos + bestLength);
+		stringToModify = before.concat(newDefinition, after);
+		//replacing other occurrences by the letter
+		for (let j = 1; j < substrPositions.length; j++){
+			const index = getSecondIncexOf(stringToModify, best);
+			let before = stringToModify.slice(0, index);
+			let after = stringToModify.slice(index + bestLength);
+			stringToModify = before.concat(definitionName, after);
+		}
 
 		tokens = provideLutingTokensFromString(stringToModify);
 	}
 
-	return "";
+	return tokensToString(tokens);
 }
 
 
 function isLocalDef(luting: string, substring: string){
 	let substrPositions  = getIndicesOf(luting, substring);
 	let newVoicePositions = getIndicesOf(luting, "|");
+	newVoicePositions.unshift(0);
 	let localPos = 0;
 	for (;localPos < newVoicePositions.length; localPos++){
-		if (substrPositions[0] > newVoicePositions[localPos]){
+		if (substrPositions[0] < newVoicePositions[localPos]){
+			localPos--;
 			break;
 		}
 	}
@@ -285,9 +336,21 @@ function getIndicesOf(searchStr: string, str: string) {
         return [];
     }
     var startIndex = 0, index, indices = [];
-    while ((index = str.indexOf(searchStr, startIndex)) > -1) {
+    while ((index = searchStr.indexOf(str, startIndex)) > -1) {
         indices.push(index);
-        startIndex = index + searchStrLen;
+        startIndex = index + str.length;
     }
     return indices;
 }
+
+function getSecondIncexOf(searchStr: string, str: string): number{
+	var searchStrLen = searchStr.length;
+    if (searchStrLen === 0) {
+        return -1;
+    }
+    var startIndex = 0, index;
+    index = searchStr.indexOf(str, startIndex);
+	startIndex = index + str.length;
+	index = searchStr.indexOf(str, startIndex);
+	return index;
+    }
