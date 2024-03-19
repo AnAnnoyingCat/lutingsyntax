@@ -71,7 +71,18 @@
 				"match": "[^)]"
 			}
 		]
-		}
+	  },
+	  {
+		"name": "comment",
+		"begin": "//",
+		"end": "//|\\n",
+		"patterns": [
+			{
+				"name": "commentContent",
+				"match": "!(\\/\\/|\\\n)"
+			}
+		]
+	  }
 	]
   }
   

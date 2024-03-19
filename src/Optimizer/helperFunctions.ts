@@ -11,6 +11,18 @@ export function tokensToString(tokens: lutingToken[]): string{
 	return returnString;
 }
 
+export function equalTokens(t1s: lutingToken[], t2s: lutingToken[]): boolean{
+	if (t1s.length !== t2s.length){
+		return false;
+	}
+	for (let i = 0; i < t1s.length; i++){
+		if (t1s[i].type !== t2s[i].type || t1s[i].content !== t2s[i].content){
+			return false;
+		}
+	}
+	return true;
+}
+
 export function expandDefinitions(tokens: lutingToken[]): string{
 	let res: string = "";
 	const definitionLookup: { [key: string] : string } = {};

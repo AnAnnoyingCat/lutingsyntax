@@ -44,6 +44,10 @@
       {
         "command": "lutingsyntax.expandDefinitions",
         "title": "Luting: Expand all defined letters into the full sections"
+      },
+      {
+        "command": "lutingsyntax.testCommand",
+        "title": "Luting: Execute test command"
       }
     ]
   },

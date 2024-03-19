@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.expandDefinitions = exports.tokensToString = void 0;
+exports.expandDefinitions = exports.equalTokens = exports.tokensToString = void 0;
 function tokensToString(tokens) {
     let returnString = "";
     for (var token of tokens) {
@@ -9,6 +9,18 @@ function tokensToString(tokens) {
     return returnString;
 }
 exports.tokensToString = tokensToString;
+function equalTokens(t1s, t2s) {
+    if (t1s.length !== t2s.length) {
+        return false;
+    }
+    for (let i = 0; i < t1s.length; i++) {
+        if (t1s[i].type !== t2s[i].type || t1s[i].content !== t2s[i].content) {
+            return false;
+        }
+    }
+    return true;
+}
+exports.equalTokens = equalTokens;
 function expandDefinitions(tokens) {
     let res = "";
     const definitionLookup = {};

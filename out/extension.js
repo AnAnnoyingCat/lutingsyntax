@@ -29,7 +29,6 @@ const tokenPrinter_1 = require("./Language/tokenPrinter");
 const myTokenParser_1 = require("./Language/myTokenParser");
 const helper = __importStar(require("./Optimizer/helperFunctions"));
 function activate(context) {
-    console.log("activate was called");
     // Register a language feature provider for the lute language
     const printTokensCommand = 'lutingsyntax.printTokens';
     const printTokensCommandHandler = async () => {
@@ -105,10 +104,41 @@ function activate(context) {
             vscode.window.showErrorMessage('No active text editor found.');
         }
     };
+    // Register a language feature provider for the lute language
+    const testCommand = 'lutingsyntax.testCommand';
+    const testCommandHandler = async () => {
+        // Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            // Get the current tokens of the active document
+            const documentUri = editor.document.uri;
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            let myTokens = new myTokenParser_1.myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            // Call the printTokens function with the tokens
+            const res = helper.equalTokens(myTokens.slice(0, 2), myTokens.slice(2, 4));
+            //write back into the document
+            editor.edit(editBuilder => {
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const end = lastLine.range.end;
+                editBuilder.insert(end, '\n\n' + res + '\n');
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage("Here are the test results!");
+                }
+                else {
+                    vscode.window.showErrorMessage("Failed to add the unjambled luting to the file");
+                }
+            });
+        }
+        else {
+            vscode.window.showErrorMessage('No active text editor found.');
+        }
+    };
     // Add the commands to the context subscriptions
     context.subscriptions.push(vscode.commands.registerCommand(printTokensCommand, printTokensCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(tokenizeAndBack, fwbwtokenizeHandler));
     context.subscriptions.push(vscode.commands.registerCommand(expandDefinitionsCommand, expandDefinitionsCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
 }
 exports.activate = activate;
 /*

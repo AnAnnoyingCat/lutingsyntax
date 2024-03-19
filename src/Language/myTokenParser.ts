@@ -12,7 +12,8 @@ import * as vscode from 'vscode';
     'predefined-section',
     'new-voice',
     'octave-change',
-    'luting-header'
+    'luting-header',
+    'comment'
 */
 
 export class lutingToken{
@@ -53,6 +54,26 @@ export class myLuteDocumentSemanticTokensProvider {
                 if (char.match(/\s/)) {
                     // Skip whitespace
                     lineIndex++;
+                } else if (char === '/' && line.substring(lineIndex+1, lineIndex+2) === '/') {
+                    // Match comment
+                    const commentBody = line.substring(lineIndex+2).match(/^.*?(?=\/\/|$)/);
+                    const commentEnd = line.substring(lineIndex+2).match(/\/\//);
+
+					if (char && commentBody){
+                        if (commentEnd){
+                            const fullString = "//".concat(commentBody[0].toString(), commentEnd[0].toString());
+                            lutingTokens.push(new lutingToken(fullString , "comment"));
+						    lineIndex += fullString.length;
+                        } else {
+                            const fullString = "//".concat(commentBody[0].toString());
+                            lutingTokens.push(new lutingToken(fullString , "comment"));
+						    lineIndex += fullString.length;
+                        }
+					} else if (char&&commentEnd) {
+						const fullString = "//".concat(commentEnd[0].toString());
+                            lutingTokens.push(new lutingToken(fullString , "comment"));
+						    lineIndex += fullString.length;
+					} 
                 } else if (char.match(/[A-Z]/)) {
                     // Match predefined section
                     const trailingNum = line.substring(lineIndex+1).match(/^\d+/);
@@ -142,7 +163,8 @@ export class myLuteDocumentSemanticTokensProvider {
                     }
                 } else if (char === 'o') {
                     // Match octave
-                    const match = line.substring(lineIndex).match(/^o\d/);
+                    const match = line.substring(lineIndex).match(/^o\d?/);
+
                     if (match) {
                         lutingTokens.push(new lutingToken(match[0], "octave"));
                         lineIndex += match[0].length;
@@ -161,6 +183,8 @@ export class myLuteDocumentSemanticTokensProvider {
                         const fullString = char.concat(trailingFrac[0].toString());
                         lutingTokens.push(new lutingToken(fullString, "time"));
                         lineIndex += fullString.length;
+                    } else if (char){
+                        lutingTokens.push(new lutingToken(char, "time"));
                     }
                 } else if (char.match(/\d/)) {
                     // Match fraction
