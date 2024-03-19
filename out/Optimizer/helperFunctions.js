@@ -152,6 +152,18 @@ function expandTimings(tokens) {
                 }
             }
         }
+        else if (tokens[i].type === 'chord') {
+            const frac = tokens[i].content.match(/(\d+\/\d+|\d+|\/\d+)/);
+            if (!frac) {
+                //chord has no fraction
+                const chord = tokens[i].content.match(/[^)]+/);
+                const closingBracket = tokens[i].content.match(/\)/);
+                if (chord && closingBracket) {
+                    const newNote = chord[0].toString().concat(closingBracket[0].toString(), currentTime);
+                    tokens[i].content = newNote;
+                }
+            }
+        }
         else if (tokens[i].type === 'new-voice') {
             currentTime = "1";
         }

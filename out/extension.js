@@ -26,9 +26,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const tokenPrinter_1 = require("./Language/tokenPrinter");
-const myTokenParser_1 = require("./Language/myTokenParser");
 const helper = __importStar(require("./Optimizer/helperFunctions"));
-const myTokenParser_2 = require("./Language/myTokenParser");
+const myTokenParser_1 = require("./Language/myTokenParser");
 function activate(context) {
     // Register a language feature provider for the lute language
     const printTokensCommand = 'lutingsyntax.printTokens';
@@ -39,7 +38,8 @@ function activate(context) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens = new myTokenParser_1.myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            const text = document.getText();
+            let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
             // Call the printTokens function with the tokens
             await (0, tokenPrinter_1.printTokens)(myTokens);
         }
@@ -55,7 +55,8 @@ function activate(context) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens = new myTokenParser_1.myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            const text = document.getText();
+            let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
             // Call the timingExpander functino with the tokens
             const decodedString = helper.tokensToString(myTokens);
             //write back into the document
@@ -84,7 +85,8 @@ function activate(context) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens = new myTokenParser_1.myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            const text = document.getText();
+            let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
             // Call the timingExpander functino with the tokens
             const finalizedString = helper.finalizeLuting(myTokens);
             //write back into the document
@@ -113,7 +115,8 @@ function activate(context) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens = new myTokenParser_1.myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            const text = document.getText();
+            let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
             // Call the timingExpander functino with the tokens
             const expandedString = helper.expandDefinitions(myTokens);
             //write back into the document
@@ -143,16 +146,17 @@ function activate(context) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens = new myTokenParser_1.myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            const text = document.getText();
+            let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
             const expandedString = helper.expandDefinitions(myTokens);
-            let expandedTokens = (0, myTokenParser_2.provideLutingTokensFromString)(expandedString);
+            let expandedTokens = (0, myTokenParser_1.provideLutingTokensFromString)(expandedString);
             helper.expandTimings(expandedTokens);
             let res = helper.tokensToString(expandedTokens);
             //write back into the document
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);
                 const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + res + '\n');
+                editBuilder.insert(end, '\n' + "//this is the expanded string: " + '\n' + expandedString + '\n' + "//And here is the full result" + '\n' + res + '\n');
             }).then(success => {
                 if (success) {
                     vscode.window.showInformationMessage("Here are the test results!");

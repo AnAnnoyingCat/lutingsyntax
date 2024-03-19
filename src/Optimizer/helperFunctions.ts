@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 
-import { myLuteDocumentSemanticTokensProvider } from '../Language/myTokenParser';
 import { lutingToken } from '../Language/myTokenParser';
 
 export function tokensToString(tokens: lutingToken[]): string{
@@ -140,6 +139,17 @@ export function expandTimings(tokens: lutingToken[]): lutingToken[]{
 				const note = tokens[i].content.match(/([a-g]'?|r)/);
 				if (note){
 					const newNote = note[0].toString().concat(currentTime);
+					tokens[i].content = newNote;
+				}
+			}
+		} else if (tokens[i].type === 'chord'){
+			const frac = tokens[i].content.match(/(\d+\/\d+|\d+|\/\d+)/);
+			if (!frac){
+				//chord has no fraction
+				const chord = tokens[i].content.match(/[^)]+/);
+                const closingBracket = tokens[i].content.match(/\)/);
+				if (chord && closingBracket){
+					const newNote = chord[0].toString().concat(closingBracket[0].toString(), currentTime);
 					tokens[i].content = newNote;
 				}
 			}

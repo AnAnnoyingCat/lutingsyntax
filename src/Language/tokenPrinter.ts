@@ -2,7 +2,6 @@
 
 import * as vscode from 'vscode';
 import { lutingToken } from './myTokenParser';
-import { myLuteDocumentSemanticTokensProvider } from './myTokenParser';
 
 export async function printTokens(myTokens: lutingToken[]): Promise<void> {
     try {

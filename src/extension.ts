@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { printTokens } from './Language/tokenPrinter';
 import { lutingToken } from './Language/myTokenParser';
-import { myLuteDocumentSemanticTokensProvider } from './Language/myTokenParser';
 import * as helper from "./Optimizer/helperFunctions";
 import { provideLutingTokensFromString } from './Language/myTokenParser';
 
@@ -16,7 +15,8 @@ export function activate(context: vscode.ExtensionContext) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens: lutingToken[] = new myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
             // Call the printTokens function with the tokens
             await printTokens(myTokens);
@@ -33,8 +33,8 @@ export function activate(context: vscode.ExtensionContext) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens: lutingToken[] = new myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
-
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
             // Call the timingExpander functino with the tokens
             const decodedString = helper.tokensToString(myTokens);
 
@@ -64,7 +64,8 @@ export function activate(context: vscode.ExtensionContext) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens: lutingToken[] = new myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
             // Call the timingExpander functino with the tokens
             const finalizedString = helper.finalizeLuting(myTokens);
@@ -95,7 +96,8 @@ export function activate(context: vscode.ExtensionContext) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens: lutingToken[] = new myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
             // Call the timingExpander functino with the tokens
             const expandedString = helper.expandDefinitions(myTokens);
@@ -127,7 +129,8 @@ export function activate(context: vscode.ExtensionContext) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             const document = await vscode.workspace.openTextDocument(documentUri);
-            let myTokens: lutingToken[] = new myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
             const expandedString = helper.expandDefinitions(myTokens);
             let expandedTokens = provideLutingTokensFromString(expandedString);
@@ -138,7 +141,7 @@ export function activate(context: vscode.ExtensionContext) {
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);
                 const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + res + '\n');
+                editBuilder.insert(end, '\n' + "//this is the expanded string: " + '\n' + expandedString + '\n' + "//And here is the full result" + '\n' + res + '\n');
             }).then(success => {
                 if (success) {
                     vscode.window.showInformationMessage("Here are the test results!");
