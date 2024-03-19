@@ -29,7 +29,7 @@ const tokenPrinter_1 = require("./Language/tokenPrinter");
 const helper = __importStar(require("./Optimizer/helperFunctions"));
 const myTokenParser_1 = require("./Language/myTokenParser");
 function activate(context) {
-    // Register a language feature provider for the lute language
+    // Command to print all tokens of current .lute to console; used for testing
     const printTokensCommand = 'lutingsyntax.printTokens';
     const printTokensCommandHandler = async () => {
         // Get the active text editor
@@ -47,36 +47,7 @@ function activate(context) {
             vscode.window.showErrorMessage('No active text editor found.');
         }
     };
-    const tokenizeAndBack = 'lutingsyntax.fwbwtokenize';
-    const fwbwtokenizeHandler = async () => {
-        // Get the active text editor
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            // Get the current tokens of the active document
-            const documentUri = editor.document.uri;
-            const document = await vscode.workspace.openTextDocument(documentUri);
-            const text = document.getText();
-            let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
-            // Call the timingExpander functino with the tokens
-            const decodedString = helper.tokensToString(myTokens);
-            //write back into the document
-            editor.edit(editBuilder => {
-                const lastLine = document.lineAt(document.lineCount - 1);
-                const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + decodedString + '\n');
-            }).then(success => {
-                if (success) {
-                    vscode.window.showInformationMessage("Let's hope it still sounds decent hryLaf");
-                }
-                else {
-                    vscode.window.showErrorMessage("Failed to add the unjambled luting to the file");
-                }
-            });
-        }
-        else {
-            vscode.window.showErrorMessage('No active text editor found.');
-        }
-    };
+    // Command to turn current .lute file into a cheerable luting string. String will be pasted into current document.
     const finalizeLuting = 'lutingsyntax.finalize';
     const finalizeLutingCommandHandler = async () => {
         // Get the active text editor
@@ -107,6 +78,7 @@ function activate(context) {
             vscode.window.showErrorMessage('No active text editor found.');
         }
     };
+    // Command to expand all current definitions into a big ass string; used for testing
     const expandDefinitionsCommand = 'lutingsyntax.expandDefinitions';
     const expandDefinitionsCommandHandler = async () => {
         // Get the active text editor
@@ -129,6 +101,39 @@ function activate(context) {
                     vscode.window.showInformationMessage("Let's hope it doesn't fuck up...");
                 }
                 else {
+                    vscode.window.showErrorMessage("Failed :(");
+                }
+            });
+        }
+        else {
+            vscode.window.showErrorMessage('No active text editor found.');
+        }
+    };
+    // Command to expand all definitions and timings; used for testing.
+    const expandDefsAndTimings = 'lutingsyntax.expandDefsAndTimings';
+    const expandDefsAndTimingsCommandHandler = async () => {
+        // Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            // Get the current tokens of the active document
+            const documentUri = editor.document.uri;
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            const text = document.getText();
+            let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
+            const expandedString = helper.expandDefinitions(myTokens);
+            let expandedTokens = (0, myTokenParser_1.provideLutingTokensFromString)(expandedString);
+            helper.expandTimings(expandedTokens);
+            let res = helper.tokensToString(expandedTokens);
+            //write back into the document
+            editor.edit(editBuilder => {
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const end = lastLine.range.end;
+                editBuilder.insert(end, '\n' + "//Here is the full result" + '\n' + res + '\n');
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage("Let's hope it isn't fucked up...");
+                }
+                else {
                     vscode.window.showErrorMessage("Failed to add the unjambled luting to the file");
                 }
             });
@@ -148,15 +153,16 @@ function activate(context) {
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
-            const expandedString = helper.expandDefinitions(myTokens);
-            let expandedTokens = (0, myTokenParser_1.provideLutingTokensFromString)(expandedString);
-            helper.expandTimings(expandedTokens);
-            let res = helper.tokensToString(expandedTokens);
+            helper.removeComments(myTokens);
+            myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(helper.expandDefinitions(myTokens));
+            helper.optimize(myTokens, 5);
+            const occurrences = helper.countOccurrencesOfSubStrings(myTokens);
+            const gain = helper.calculateGainFromOccurrences(occurrences);
             //write back into the document
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);
                 const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + "//this is the expanded string: " + '\n' + expandedString + '\n' + "//And here is the full result" + '\n' + res + '\n');
+                editBuilder.insert(end, '\n' + occurrences + '\n');
             }).then(success => {
                 if (success) {
                     vscode.window.showInformationMessage("Here are the test results!");
@@ -172,10 +178,10 @@ function activate(context) {
     };
     // Add the commands to the context subscriptions
     context.subscriptions.push(vscode.commands.registerCommand(printTokensCommand, printTokensCommandHandler));
-    context.subscriptions.push(vscode.commands.registerCommand(tokenizeAndBack, fwbwtokenizeHandler));
     context.subscriptions.push(vscode.commands.registerCommand(expandDefinitionsCommand, expandDefinitionsCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(finalizeLuting, finalizeLutingCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(expandDefsAndTimings, expandDefsAndTimingsCommandHandler));
 }
 exports.activate = activate;
 //# sourceMappingURL=extension.js.map

@@ -1,7 +1,7 @@
 {
   "name": "lutingsyntax",
-  "displayName": "LutingSyntax",
-  "description": "Test extension to highlight syntax of lutings in VSCode",
+  "displayName": "LutingInVSCode",
+  "description": "Extension to write and modify lutings in VSCode using the .lute file format.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.87.0"
@@ -15,7 +15,11 @@
       {
         "id": "luting",
         "extensions": [".lute"],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./luting.png",
+          "dark": "./luting.png"
+        }
       }
     ],
     "grammars": [
@@ -52,6 +56,10 @@
       {
         "command": "lutingsyntax.finalize",
         "title": "Luting: Finalize your luting!"
+      },
+      {
+        "command": "lutingsyntax.expandDefsAndTimings",
+        "title": "Luting: Expand all definitions and timings!"
       }
     ]
   },
