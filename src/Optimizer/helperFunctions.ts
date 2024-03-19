@@ -24,6 +24,7 @@ export function equalTokens(t1s: lutingToken[], t2s: lutingToken[]): boolean{
 }
 
 export function expandDefinitions(tokens: lutingToken[]): string{
+	removeComments(tokens);
 	let res: string = "";
 	const definitionLookup: { [key: string] : string } = {};
 	let inDefinition: number = 0;

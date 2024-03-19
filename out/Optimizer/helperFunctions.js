@@ -22,6 +22,7 @@ function equalTokens(t1s, t2s) {
 }
 exports.equalTokens = equalTokens;
 function expandDefinitions(tokens) {
+    removeComments(tokens);
     let res = "";
     const definitionLookup = {};
     let inDefinition = 0;

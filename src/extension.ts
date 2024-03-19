@@ -129,7 +129,6 @@ export function activate(context: vscode.ExtensionContext) {
             const document = await vscode.workspace.openTextDocument(documentUri);
             let myTokens: lutingToken[] = new myLuteDocumentSemanticTokensProvider().provideDocumentSemanticTokens(document, (new vscode.CancellationTokenSource()).token);
 
-            // Call the printTokens function with the tokens
             const expandedString = helper.expandDefinitions(myTokens);
             let expandedTokens = provideLutingTokensFromString(expandedString);
             helper.expandTimings(expandedTokens);
