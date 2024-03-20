@@ -161,7 +161,7 @@ export function expandTimings(tokens: lutingToken[]): lutingToken[]{
 }
 
 
-function calculateUniqueSubstrings(tokens: lutingToken[]): { substring: string, gain: number }[] {
+function calculateUniqueSubstrings(tokens: lutingToken[]): { tokenArr: lutingToken[], gain: number }[] {
 	const substringSet = new Set<string>();
 	const tokenSubArraySet = new Set<lutingToken[]>();
     // Calculate all substrings
@@ -208,11 +208,11 @@ function calculateUniqueSubstrings(tokens: lutingToken[]): { substring: string, 
 	let substringArr = Array.from(substringSet);
 	let tokenArrArr = Array.from(tokenSubArraySet);
     // Calculate gain for each substring
-    const substringsWithGain = substringArr.map(substring => {
-        const occurrences = tokensToString(tokens).split(substring).length - 1;
-        const length = substring.length;
+    const substringsWithGain = tokenArrArr.map(tokenArr => {
+        const occurrences = getLutingIndicesOf(tokens, tokenArr).length;
+        const length = totalLength(tokenArr);
         const gain = (occurrences * length) - (length + occurrences + 2);
-        return { substring, gain };
+        return { tokenArr, gain };
     });
 
 	substringsWithGain.sort((a, b) => b.gain - a.gain);
@@ -220,12 +220,164 @@ function calculateUniqueSubstrings(tokens: lutingToken[]): { substring: string, 
     return substringsWithGain;
 }
 
-function numOccurrences(luting: lutingToken[], subLuting: lutingToken[]): number{
-
-	return 0;
+function totalLength(subLuting: lutingToken[]): number{
+	let cnt = 0; 
+	for (let l of subLuting){
+		cnt += l.length;
+	}
+	return cnt;
 }
 
-export function countOccurrencesOfSubStrings(tokens: lutingToken[]): Map<string, number>{
+export function optimize(tokens: lutingToken[], maxItr: number): string{
+	let globalDefsToUse: string[] = ["Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A"];
+	let numVoices = 1;
+	for (let tk of tokens){
+		if (tk.type === 'new-voice'){
+			numVoices++;
+		}
+	}
+	let localDefsToUse: string[][] = [];
+	for (let i = 0; i < numVoices; i++){
+		localDefsToUse[i] = [];
+		for (let j = globalDefsToUse.length - 1; j >= 0; j--){
+			localDefsToUse[i].push(globalDefsToUse[j]);
+		}
+	}
+
+	removeComments(tokens);
+	tokens = provideLutingTokensFromString(expandDefinitions(tokens));
+	for (let i = 0; i < maxItr; i++){
+		let sortedSubstrings = calculateUniqueSubstrings(tokens);
+
+		if (sortedSubstrings[0].gain <= 0){
+			//no more optimizations possible!
+			break;
+		}
+
+		let best: lutingToken[] = sortedSubstrings[0].tokenArr;
+		//let stringToModify = tokensToString(tokens);
+
+		let localPosition = isLocalDef(tokens, best);
+		let definitionName = "";
+		if (localPosition < 0){
+			//not local
+			definitionName = globalDefsToUse[0];
+			globalDefsToUse.splice(0, 1);
+			
+		} else {
+			definitionName = localDefsToUse[localPosition][0];
+			localDefsToUse[localPosition].splice(0, 1);
+		}
+
+		let numOccurrences  = getLutingIndicesOf(tokens, best).length;
+		let firstPos = getLutingIndexOf(tokens, best);
+		let newDefinition = new lutingToken(definitionName.concat('{'), "start-definition");
+		let newDefEnd = new lutingToken("}", "end-definition");
+		let bestLength = best.length;
+		
+		//base case: the definition
+		const insertLocation = getLutingIndexOf(tokens, best);
+		//add the new definition start and end brackets
+		tokens.splice(insertLocation, 0, newDefinition);
+		tokens.splice(insertLocation, best.length + 1, newDefEnd);
+
+		//replacing other occurrences by just the predefined-value
+		for (let j = 1; j < numOccurrences; j++){
+			const insertLocation = getSecondLutingIndexOf(tokens, best);
+			let newDefinition = new lutingToken(definitionName, "predefined-value");
+			tokens.splice(insertLocation, best.length, newDefinition);
+		}
+
+	}
+
+	return tokensToString(tokens);
+}
+
+
+function isLocalDef(luting: lutingToken[], subLuting: lutingToken[]){
+	let substrPositions  = getLutingIndicesOf(luting, subLuting);
+	let newVoicePositions = getLutingIndicesOf(luting, [new lutingToken("|", "new-voice")]);
+	newVoicePositions.unshift(0);
+	let localPos = 0;
+	for (;localPos < newVoicePositions.length; localPos++){
+		if (substrPositions[0] < newVoicePositions[localPos]){
+			break;
+		}
+	}
+	localPos--;
+	for (let i = 1; i < substrPositions.length; i++){
+		if (substrPositions[i]>newVoicePositions[localPos + 1]){
+			return -1;
+		}
+	}
+	return localPos;
+}
+
+function getLutingIndicesOf(luting: lutingToken[], subLuting: lutingToken[]){
+	var searchLutingLength = luting.length;
+	if (searchLutingLength === 0){
+		return [];
+	}
+	var startIndex = 0, index, indices = [];
+	while ((index = getLutingIndexOf(luting, subLuting)) > -1){
+		indices.push(index);
+		index + subLuting.length;
+	}
+	return indices;
+}
+
+function getLutingIndexOf(luting: lutingToken[], subLuting: lutingToken[]){
+	const subLutingLength = subLuting.length;
+	for (let i = 0; i < lutingToken.length - subLutingLength - 1; i++){
+		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
+			return i;
+		}
+	}
+	return -1;
+}
+
+function getSecondLutingIndexOf(luting: lutingToken[], subLuting: lutingToken[]){
+	const subLutingLength = subLuting.length;
+	let cnt = 0;
+	let i = 0;
+	for (; i < lutingToken.length - subLutingLength - 1 && cnt !== 2; i++){
+		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
+			cnt++;
+		}
+	}
+	if (cnt === 2){
+		return i;
+	}
+	return -1;
+}
+
+function getIndicesOf(searchStr: string, str: string) {
+    var searchStrLen = searchStr.length;
+    if (searchStrLen === 0) {
+        return [];
+    }
+    var startIndex = 0, index, indices = [];
+    while ((index = searchStr.indexOf(str, startIndex)) > -1) {
+        indices.push(index);
+        startIndex = index + str.length;
+    }
+    return indices;
+}
+
+function getSecondIncexOf(searchStr: string, str: string): number{
+	var searchStrLen = searchStr.length;
+    if (searchStrLen === 0) {
+        return -1;
+    }
+    var startIndex = 0, index;
+    index = searchStr.indexOf(str, startIndex);
+	startIndex = index + str.length;
+	index = searchStr.indexOf(str, startIndex);
+	return index;
+    }
+
+	/*
+	export function countOccurrencesOfSubStrings(tokens: lutingToken[]): Map<string, number>{
 	let occurrences: Map<string, number> = new Map<string, number>();
 	for (let i = 0; i < tokens.length; i++){
 		for (let j = i+1; j <= tokens.length; j++){
@@ -275,112 +427,4 @@ export function calculateGainFromOccurrences(occurrences: Map<string, number>): 
 	const sortedOcurrences = new Map(sortedArray);
 	return sortedOcurrences;
 }
-
-export function optimize(tokens: lutingToken[], maxItr: number): string{
-	let globalDefsToUse: string[] = ["Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A"];
-	let numVoices = 1;
-	for (let tk of tokens){
-		if (tk.type === 'new-voice'){
-			numVoices++;
-		}
-	}
-	let localDefsToUse: string[][] = [];
-	for (let i = 0; i < numVoices; i++){
-		localDefsToUse[i] = [];
-		for (let j = globalDefsToUse.length - 1; j >= 0; j--){
-			localDefsToUse[i].push(globalDefsToUse[j]);
-		}
-	}
-
-	removeComments(tokens);
-	tokens = provideLutingTokensFromString(expandDefinitions(tokens));
-	for (let i = 0; i < maxItr; i++){
-		let sortedSubstrings = calculateUniqueSubstrings(tokens);
-
-		if (sortedSubstrings[0].gain <= 0){
-			//no more optimizations possible!
-			break;
-		}
-
-		let best: string = sortedSubstrings[0].substring;
-		let stringToModify = tokensToString(tokens);
-
-		let localPosition = isLocalDef(stringToModify, best);
-		let definitionName = "";
-		if (localPosition < 0){
-			//not local
-			definitionName = globalDefsToUse[0];
-			globalDefsToUse.splice(0, 1);
-			
-		} else {
-			definitionName = localDefsToUse[localPosition][0];
-			localDefsToUse[localPosition].splice(0, 1);
-		}
-
-		let substrPositions  = getIndicesOf(stringToModify, best);
-		let firstPos = stringToModify.indexOf(best);
-		let newDefinition = definitionName.concat("{", best, "}");
-		let bestLength = best.length;
-		
-		//base case: the definition
-		let before = stringToModify.slice(0, firstPos);
-		let after = stringToModify.slice(firstPos + bestLength);
-		stringToModify = before.concat(newDefinition, after);
-		//replacing other occurrences by the letter
-		for (let j = 1; j < substrPositions.length; j++){
-			const index = getSecondIncexOf(stringToModify, best);
-			let before = stringToModify.slice(0, index);
-			let after = stringToModify.slice(index + bestLength);
-			stringToModify = before.concat(definitionName, after);
-		}
-
-		tokens = provideLutingTokensFromString(stringToModify);
-	}
-
-	return tokensToString(tokens);
-}
-
-
-function isLocalDef(luting: string, substring: string){
-	let substrPositions  = getIndicesOf(luting, substring);
-	let newVoicePositions = getIndicesOf(luting, "|");
-	newVoicePositions.unshift(0);
-	let localPos = 0;
-	for (;localPos < newVoicePositions.length; localPos++){
-		if (substrPositions[0] < newVoicePositions[localPos]){
-			break;
-		}
-	}
-	localPos--;
-	for (let i = 1; i < substrPositions.length; i++){
-		if (substrPositions[i]>newVoicePositions[localPos + 1]){
-			return -1;
-		}
-	}
-	return localPos;
-}
-
-function getIndicesOf(searchStr: string, str: string) {
-    var searchStrLen = searchStr.length;
-    if (searchStrLen === 0) {
-        return [];
-    }
-    var startIndex = 0, index, indices = [];
-    while ((index = searchStr.indexOf(str, startIndex)) > -1) {
-        indices.push(index);
-        startIndex = index + str.length;
-    }
-    return indices;
-}
-
-function getSecondIncexOf(searchStr: string, str: string): number{
-	var searchStrLen = searchStr.length;
-    if (searchStrLen === 0) {
-        return -1;
-    }
-    var startIndex = 0, index;
-    index = searchStr.indexOf(str, startIndex);
-	startIndex = index + str.length;
-	index = searchStr.indexOf(str, startIndex);
-	return index;
-    }
+*/
