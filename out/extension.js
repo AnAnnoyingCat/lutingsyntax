@@ -61,7 +61,7 @@ function activate(context) {
             let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
             // Call the timingExpander functino with the tokens
             const finalizedString = helper.finalizeLuting(myTokens);
-            vscode.env.clipboard.writeText(finalizedString);
+            vscode.env.clipboard.writeText(finalizedString + " Cheer1");
             vscode.window.showInformationMessage("Copied to Clipboard, Hope it sounds good! hryAdmire");
         }
         else {
