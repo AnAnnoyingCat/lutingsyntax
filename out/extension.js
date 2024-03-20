@@ -154,7 +154,7 @@ function activate(context) {
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
-            const optimizedResult = helper.optimize(myTokens, 5);
+            const optimizedResult = helper.optimize(myTokens, 50);
             //write back into the document
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);

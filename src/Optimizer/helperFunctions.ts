@@ -166,7 +166,7 @@ function calculateUniqueSubstrings(tokens: lutingToken[]): { tokenArr: lutingTok
 	const tokenSubArraySet = new Set<lutingToken[]>();
     // Calculate all substrings
     for (let i = 0; i < tokens.length; i++) {
-        for (let j = i+1; j < tokens.length; j++) {
+        for (let j = i+1; j <= tokens.length; j++) {
 			let tempArr: lutingToken[] = tokens.slice(i, j);
 			let currentString = "";
 			let legalDefWise: Boolean = true;
@@ -230,12 +230,7 @@ function totalLength(subLuting: lutingToken[]): number{
 
 export function optimize(tokens: lutingToken[], maxItr: number): string{
 	let globalDefsToUse: string[] = ["Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A"];
-	let numVoices = 1;
-	for (let tk of tokens){
-		if (tk.type === 'new-voice'){
-			numVoices++;
-		}
-	}
+	let numVoices = getLutingIndicesOf(tokens, [new lutingToken("|", "new-voice")]).length + 1;
 	let localDefsToUse: string[][] = [];
 	for (let i = 0; i < numVoices; i++){
 		localDefsToUse[i] = [];
@@ -255,6 +250,8 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		}
 
 		let best: lutingToken[] = sortedSubstrings[0].tokenArr;
+		let bestString = tokensToString(best);
+		let workingString = tokensToString(tokens);
 		//let stringToModify = tokensToString(tokens);
 
 		let localPosition = isLocalDef(tokens, best);
@@ -270,16 +267,16 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		}
 
 		let numOccurrences  = getLutingIndicesOf(tokens, best).length;
-		let firstPos = getLutingIndexOf(tokens, best);
 		let newDefinition = new lutingToken(definitionName.concat('{'), "start-definition");
 		let newDefEnd = new lutingToken("}", "end-definition");
-		let bestLength = best.length;
 		
 		//base case: the definition
 		const insertLocation = getLutingIndexOf(tokens, best);
 		//add the new definition start and end brackets
 		tokens.splice(insertLocation, 0, newDefinition);
-		tokens.splice(insertLocation, best.length + 1, newDefEnd);
+		const bl = best.length;
+		const newLoc = insertLocation + bl + 1; //we add 1 since we included one more token
+		tokens.splice(insertLocation + best.length + 1, 0, newDefEnd); 
 
 		//replacing other occurrences by just the predefined-value
 		for (let j = 1; j < numOccurrences; j++){
@@ -319,16 +316,26 @@ function getLutingIndicesOf(luting: lutingToken[], subLuting: lutingToken[]){
 		return [];
 	}
 	var startIndex = 0, index, indices = [];
-	while ((index = getLutingIndexOf(luting, subLuting)) > -1){
+	while ((index = getLutingIndexAfter(luting, subLuting, startIndex)) > -1){
 		indices.push(index);
-		index + subLuting.length;
+		startIndex = index + subLuting.length;
 	}
 	return indices;
 }
 
+function getLutingIndexAfter(luting: lutingToken[], subLuting: lutingToken[], start: number){
+	const subLutingLength = subLuting.length;
+	for (let i = start; i <= luting.length - subLutingLength; i++){
+		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
+			return i;
+		}
+	}
+	return -1;
+}
+
 function getLutingIndexOf(luting: lutingToken[], subLuting: lutingToken[]){
 	const subLutingLength = subLuting.length;
-	for (let i = 0; i < lutingToken.length - subLutingLength - 1; i++){
+	for (let i = 0; i < luting.length - subLutingLength - 1; i++){
 		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
 			return i;
 		}
@@ -340,91 +347,13 @@ function getSecondLutingIndexOf(luting: lutingToken[], subLuting: lutingToken[])
 	const subLutingLength = subLuting.length;
 	let cnt = 0;
 	let i = 0;
-	for (; i < lutingToken.length - subLutingLength - 1 && cnt !== 2; i++){
+	for (; i < luting.length - subLutingLength && cnt !== 2; i++){
 		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
 			cnt++;
 		}
 	}
 	if (cnt === 2){
-		return i;
+		return i-1;
 	}
 	return -1;
 }
-
-function getIndicesOf(searchStr: string, str: string) {
-    var searchStrLen = searchStr.length;
-    if (searchStrLen === 0) {
-        return [];
-    }
-    var startIndex = 0, index, indices = [];
-    while ((index = searchStr.indexOf(str, startIndex)) > -1) {
-        indices.push(index);
-        startIndex = index + str.length;
-    }
-    return indices;
-}
-
-function getSecondIncexOf(searchStr: string, str: string): number{
-	var searchStrLen = searchStr.length;
-    if (searchStrLen === 0) {
-        return -1;
-    }
-    var startIndex = 0, index;
-    index = searchStr.indexOf(str, startIndex);
-	startIndex = index + str.length;
-	index = searchStr.indexOf(str, startIndex);
-	return index;
-    }
-
-	/*
-	export function countOccurrencesOfSubStrings(tokens: lutingToken[]): Map<string, number>{
-	let occurrences: Map<string, number> = new Map<string, number>();
-	for (let i = 0; i < tokens.length; i++){
-		for (let j = i+1; j <= tokens.length; j++){
-			let tempArr: lutingToken[] = tokens.slice(i, j);
-			let currentString = "";
-			let legal: Boolean = true;
-			let inDef: number  = 0;
-			for (const tk of tempArr){
-				if (tk.type === 'new-voice'){
-					legal = false;
-					break;
-				} else if (tk.type === 'start-definition'){
-					inDef++;
-				} else if (tk.type === 'end-definition'){
-					if (inDef = 0){
-						legal = false;
-						break;
-					}
-					inDef--;
-				}
-				currentString = currentString.concat(tk.content.toString());
-			}
-			if (inDef !== 0){
-				legal = false;
-			}
-			if (legal && occurrences.has(currentString)){
-				occurrences.set(currentString, occurrences.get(currentString)! + 1);
-			} else if (legal) {
-				occurrences.set(currentString, 1);
-			} else {
-				continue;
-			}
-		}
-	}
-	const sortedArray = Array.from(occurrences).sort((a, b) => b[1] - a[1]);
-	const sortedOcurrences = new Map(sortedArray);
-	return sortedOcurrences;
-}
-
-export function calculateGainFromOccurrences(occurrences: Map<string, number>):  Map<string, number>{
-	let res : Map<string, number> = new Map<string, number>();
-	occurrences.forEach((value: number, key: string) => {
-		let gain = (value * key.length) - (key.length + value + 2);
-		res.set(key, gain);
-	});
-	const sortedArray = Array.from(res).sort((a, b) => b[1] - a[1]);
-	const sortedOcurrences = new Map(sortedArray);
-	return sortedOcurrences;
-}
-*/

@@ -139,7 +139,8 @@ export function activate(context: vscode.ExtensionContext) {
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
-            const optimizedResult = helper.optimize(myTokens, 5);
+            const optimizedResult = helper.optimize(myTokens, 50);
+
 
             //write back into the document
             editor.edit(editBuilder => {
