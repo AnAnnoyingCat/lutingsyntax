@@ -256,9 +256,6 @@ function optimize(tokens, maxItr) {
             break;
         }
         let best = sortedSubstrings[0].tokenArr;
-        let bestString = tokensToString(best);
-        let workingString = tokensToString(tokens);
-        //let stringToModify = tokensToString(tokens);
         let localPosition = isLocalDef(tokens, best);
         let definitionName = "";
         if (localPosition < 0) {
@@ -287,7 +284,8 @@ function optimize(tokens, maxItr) {
             tokens.splice(insertLocation, best.length, newDefinition);
         }
     }
-    return tokensToString(tokens);
+    const resultingLuting = tokensToString(tokens);
+    return resultingLuting;
 }
 exports.optimize = optimize;
 function isLocalDef(luting, subLuting) {
@@ -331,7 +329,7 @@ function getLutingIndexAfter(luting, subLuting, start) {
 }
 function getLutingIndexOf(luting, subLuting) {
     const subLutingLength = subLuting.length;
-    for (let i = 0; i < luting.length - subLutingLength - 1; i++) {
+    for (let i = 0; i <= luting.length - subLutingLength; i++) {
         if (equalTokens(subLuting, luting.slice(i, i + subLutingLength))) {
             return i;
         }
@@ -342,7 +340,10 @@ function getSecondLutingIndexOf(luting, subLuting) {
     const subLutingLength = subLuting.length;
     let cnt = 0;
     let i = 0;
-    for (; i < luting.length - subLutingLength && cnt !== 2; i++) {
+    for (; i <= luting.length - subLutingLength && cnt !== 2; i++) {
+        if (i === 925) {
+            let breakpoint = 3;
+        }
         if (equalTokens(subLuting, luting.slice(i, i + subLutingLength))) {
             cnt++;
         }

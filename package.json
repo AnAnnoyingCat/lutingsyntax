@@ -39,28 +39,12 @@
     ],
     "commands": [
       {
-        "command": "lutingsyntax.printTokens",
-        "title": "Luting: Print all tokens"
-      },
-      {
-        "command": "lutingsyntax.fwbwtokenize",
-        "title": "Luting: Tokenize and back your luting."
-      },
-      {
-        "command": "lutingsyntax.expandDefinitions",
-        "title": "Luting: Expand all defined letters into the full sections"
-      },
-      {
-        "command": "lutingsyntax.testCommand",
-        "title": "Luting: Execute test command"
-      },
-      {
         "command": "lutingsyntax.finalize",
-        "title": "Luting: Finalize your luting!"
+        "title": "Luting: Finalize luting to clipboard!"
       },
       {
-        "command": "lutingsyntax.expandDefsAndTimings",
-        "title": "Luting: Expand all definitions and timings!"
+        "command": "lutingsyntax.optimize",
+        "title": "Luting: Optimize your luting!"
       }
     ]
   },

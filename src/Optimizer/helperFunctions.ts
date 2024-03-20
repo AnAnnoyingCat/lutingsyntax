@@ -239,6 +239,7 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		}
 	}
 
+
 	removeComments(tokens);
 	tokens = provideLutingTokensFromString(expandDefinitions(tokens));
 	for (let i = 0; i < maxItr; i++){
@@ -250,9 +251,6 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		}
 
 		let best: lutingToken[] = sortedSubstrings[0].tokenArr;
-		let bestString = tokensToString(best);
-		let workingString = tokensToString(tokens);
-		//let stringToModify = tokensToString(tokens);
 
 		let localPosition = isLocalDef(tokens, best);
 		let definitionName = "";
@@ -269,7 +267,7 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		let numOccurrences  = getLutingIndicesOf(tokens, best).length;
 		let newDefinition = new lutingToken(definitionName.concat('{'), "start-definition");
 		let newDefEnd = new lutingToken("}", "end-definition");
-		
+
 		//base case: the definition
 		const insertLocation = getLutingIndexOf(tokens, best);
 		//add the new definition start and end brackets
@@ -277,7 +275,6 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		const bl = best.length;
 		const newLoc = insertLocation + bl + 1; //we add 1 since we included one more token
 		tokens.splice(insertLocation + best.length + 1, 0, newDefEnd); 
-
 		//replacing other occurrences by just the predefined-value
 		for (let j = 1; j < numOccurrences; j++){
 			const insertLocation = getSecondLutingIndexOf(tokens, best);
@@ -286,8 +283,8 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		}
 
 	}
-
-	return tokensToString(tokens);
+	const resultingLuting = tokensToString(tokens);
+	return resultingLuting;
 }
 
 
@@ -335,7 +332,7 @@ function getLutingIndexAfter(luting: lutingToken[], subLuting: lutingToken[], st
 
 function getLutingIndexOf(luting: lutingToken[], subLuting: lutingToken[]){
 	const subLutingLength = subLuting.length;
-	for (let i = 0; i < luting.length - subLutingLength - 1; i++){
+	for (let i = 0; i <= luting.length - subLutingLength; i++){
 		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
 			return i;
 		}
@@ -347,7 +344,10 @@ function getSecondLutingIndexOf(luting: lutingToken[], subLuting: lutingToken[])
 	const subLutingLength = subLuting.length;
 	let cnt = 0;
 	let i = 0;
-	for (; i < luting.length - subLutingLength && cnt !== 2; i++){
+	for (; i <= luting.length - subLutingLength && cnt !== 2; i++){
+		if (i === 925){
+			let breakpoint = 3;
+		}
 		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
 			cnt++;
 		}
