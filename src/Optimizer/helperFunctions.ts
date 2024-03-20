@@ -174,8 +174,8 @@ function calculateUniqueSubstrings(tokens: lutingToken[]): { tokenArr: lutingTok
         for (let j = i+1; j <= tokens.length; j++) {
 			let tempArr: lutingToken[] = tokens.slice(i, j);
 			let currentString = "";
-			let legalDefWise: Boolean = true;
-			let skipVoice: Boolean = false;
+			let legalDefWise: boolean = true;
+			let skipVoice: boolean = false;
 			let inDef: number  = 0;
 			for (const tk of tempArr){
 				if (tk.type === 'new-voice'){
@@ -232,7 +232,7 @@ function calculateUniqueSubstrings(tokens: lutingToken[]): { tokenArr: lutingTok
 //Helper function that squashes all repeated definitions into one. E.g. AAAA = A4
 function squashRepeatedDefs(tokens: lutingToken[], def: lutingToken) : lutingToken[]{
 	let cnt = 0;
-	let rep: Boolean = false;
+	let rep: boolean = false;
 	let repStart = 0;
 
 	for (let i = 0; i < tokens.length; i++){
@@ -289,7 +289,7 @@ function squashRepeatedDefs(tokens: lutingToken[], def: lutingToken) : lutingTok
 }
 
 //The big one. Calculates the substring with largest gain and greedily define and replace it.
-export function optimize(tokens: lutingToken[], maxItr: number): string{
+export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, quick: boolean): string{
 	let globalDefsToUse: string[] = ["Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A"];
 	let numVoices = getLutingIndicesOf(tokens, [new lutingToken("|", "new-voice")]).length + 1;
 	let localDefsToUse: string[][] = [];
@@ -299,13 +299,17 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 			localDefsToUse[i].push(globalDefsToUse[j]);
 		}
 	}
-
+	//let Chatting = vscode.window.createOutputChannel("Chatting");
+	//Chatting.show();
 	let lowestGlobalDef = "Z";
 	let hightestLocalDef = "A";
+	//used for tracking legality of best transformation
+	let bestOffset = 0;
 
 	removeComments(tokens);
-
-	tokens = provideLutingTokensFromString(expandDefinitions(tokens));
+	if (!quick){
+		tokens = provideLutingTokensFromString(expandDefinitions(tokens));
+	}
 
 	for (let i = 0; i < maxItr; i++){
 
@@ -321,11 +325,17 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 			break;
 		}
 
-		let best: lutingToken[] = sortedSubstrings[0].tokenArr;
+		let best: lutingToken[] = sortedSubstrings[bestOffset].tokenArr;
 
 		//Figuring out whether the optimization is local or global; use different naming respectively
-		let localPosition = isLocalDef(tokens, best);
+		let localPosition = isLocalDef(tokens, best, hightestLocalDef, safe);
 		let definitionName = "";
+		if (localPosition === -2){
+			//current best option is sadly illegal
+			console.log("found some illegal definitions. ignoring...");
+			bestOffset++;
+			continue;
+		}
 		if (localPosition < 0){
 			//not local
 			definitionName = globalDefsToUse[0];
@@ -357,14 +367,18 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 			let newDefinition = new lutingToken(definitionName, "predefined-section");
 			tokens.splice(insertLocation, best.length, newDefinition);
 		}
-		//tokens = squashRepeatedDefs(tokens, new lutingToken(definitionName, "predefined-section"));
+		//squash down the current definition
+		tokens = squashRepeatedDefs(tokens, new lutingToken(definitionName, "predefined-section"));
+		//log all definitions for testing purposes
+		//Chatting.appendLine('\n' + tokensToString(tokens));
 	}
 	const resultingLuting = tokensToString(tokens);
 	return resultingLuting;
 }
 
 //Helper function to find out whether a definition is contained within just one voice and if so in which.
-function isLocalDef(luting: lutingToken[], subLuting: lutingToken[]){
+function isLocalDef(luting: lutingToken[], subLuting: lutingToken[], currentLocalChar: string, safe: boolean){
+
 	let substrPositions  = getLutingIndicesOf(luting, subLuting);
 	let newVoicePositions = getLutingIndicesOf(luting, [new lutingToken("|", "new-voice")]);
 	newVoicePositions.unshift(0);
@@ -377,6 +391,18 @@ function isLocalDef(luting: lutingToken[], subLuting: lutingToken[]){
 	localPos--;
 	for (let i = 1; i < substrPositions.length; i++){
 		if (substrPositions[i]>newVoicePositions[localPos + 1]){
+			if (safe){
+				//for safety: if we're trying to assign a previously used local letter on global ground, we're breaking the rules.
+				let localLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+				localLetters = localLetters.slice(0, localLetters.indexOf(currentLocalChar));
+				for (let l of localLetters){
+					for (let i = 0; i < subLuting.length; i++){
+						if (subLuting[i].content.indexOf(l) > -1){
+							return -2;
+						}
+					}
+				}
+			}
 			return -1;
 		}
 	}

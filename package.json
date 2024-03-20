@@ -1,14 +1,16 @@
 {
   "name": "lutingsyntax",
-  "displayName": "LutingInVSCode",
-  "description": "Extension to write and modify lutings in VSCode using the .lute file format.",
+  "displayName": "Luting In VS Code",
+  "description": "Extension to write and modify Lutings in VSCode using the .lute file format.",
+  "publisher": "JustAnAnnoyingCat",
   "icon": "./luting.png",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.87.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages",
+    "Themes"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -32,7 +34,7 @@
     ],
     "themes": [
       {
-        "label": "Luting extension",
+        "label": "Luting Syntax Highlights",
         "uiTheme": "vs-dark",
         "path": "./modifiedOneDarkProMix.json"
       }
@@ -43,8 +45,20 @@
         "title": "Luting: Finalize luting to clipboard!"
       },
       {
-        "command": "lutingsyntax.optimize",
-        "title": "Luting: Optimize your luting!"
+        "command": "lutingsyntax.safeoptimize",
+        "title": "Luting: Safe Optimization"
+      },
+      {
+        "command": "lutingsyntax.unsafeoptimize",
+        "title": "Luting: Unsafe Optimization"
+      },
+      {
+        "command": "lutingsyntax.quickoptimize",
+        "title": "Luting: Perform quick optimization"
+      },
+      {
+        "command": "lutingsyntax.cheer",
+        "title": "Luting: Generate Cheerable string"
       }
     ]
   },

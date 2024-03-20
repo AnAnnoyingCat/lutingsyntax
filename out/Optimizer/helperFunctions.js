@@ -305,7 +305,7 @@ function squashRepeatedDefs(tokens, def) {
     return tokens;
 }
 //The big one. Calculates the substring with largest gain and greedily define and replace it.
-function optimize(tokens, maxItr) {
+function optimize(tokens, maxItr, safe, quick) {
     let globalDefsToUse = ["Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A"];
     let numVoices = getLutingIndicesOf(tokens, [new myTokenParser_1.lutingToken("|", "new-voice")]).length + 1;
     let localDefsToUse = [];
@@ -315,10 +315,16 @@ function optimize(tokens, maxItr) {
             localDefsToUse[i].push(globalDefsToUse[j]);
         }
     }
+    //let Chatting = vscode.window.createOutputChannel("Chatting");
+    //Chatting.show();
     let lowestGlobalDef = "Z";
     let hightestLocalDef = "A";
+    //used for tracking legality of best transformation
+    let bestOffset = 0;
     removeComments(tokens);
-    tokens = (0, myTokenParser_1.provideLutingTokensFromString)(expandDefinitions(tokens));
+    if (!quick) {
+        tokens = (0, myTokenParser_1.provideLutingTokensFromString)(expandDefinitions(tokens));
+    }
     for (let i = 0; i < maxItr; i++) {
         //Finding the substrings with the best gain
         let sortedSubstrings = calculateUniqueSubstrings(tokens);
@@ -330,10 +336,16 @@ function optimize(tokens, maxItr) {
             }
             break;
         }
-        let best = sortedSubstrings[0].tokenArr;
+        let best = sortedSubstrings[bestOffset].tokenArr;
         //Figuring out whether the optimization is local or global; use different naming respectively
-        let localPosition = isLocalDef(tokens, best);
+        let localPosition = isLocalDef(tokens, best, hightestLocalDef, safe);
         let definitionName = "";
+        if (localPosition === -2) {
+            //current best option is sadly illegal
+            console.log("found some illegal definitions. ignoring...");
+            bestOffset++;
+            continue;
+        }
         if (localPosition < 0) {
             //not local
             definitionName = globalDefsToUse[0];
@@ -363,14 +375,17 @@ function optimize(tokens, maxItr) {
             let newDefinition = new myTokenParser_1.lutingToken(definitionName, "predefined-section");
             tokens.splice(insertLocation, best.length, newDefinition);
         }
-        //tokens = squashRepeatedDefs(tokens, new lutingToken(definitionName, "predefined-section"));
+        //squash down the current definition
+        tokens = squashRepeatedDefs(tokens, new myTokenParser_1.lutingToken(definitionName, "predefined-section"));
+        //log all definitions for testing purposes
+        //Chatting.appendLine('\n' + tokensToString(tokens));
     }
     const resultingLuting = tokensToString(tokens);
     return resultingLuting;
 }
 exports.optimize = optimize;
 //Helper function to find out whether a definition is contained within just one voice and if so in which.
-function isLocalDef(luting, subLuting) {
+function isLocalDef(luting, subLuting, currentLocalChar, safe) {
     let substrPositions = getLutingIndicesOf(luting, subLuting);
     let newVoicePositions = getLutingIndicesOf(luting, [new myTokenParser_1.lutingToken("|", "new-voice")]);
     newVoicePositions.unshift(0);
@@ -383,6 +398,18 @@ function isLocalDef(luting, subLuting) {
     localPos--;
     for (let i = 1; i < substrPositions.length; i++) {
         if (substrPositions[i] > newVoicePositions[localPos + 1]) {
+            if (safe) {
+                //for safety: if we're trying to assign a previously used local letter on global ground, we're breaking the rules.
+                let localLetters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+                localLetters = localLetters.slice(0, localLetters.indexOf(currentLocalChar));
+                for (let l of localLetters) {
+                    for (let i = 0; i < subLuting.length; i++) {
+                        if (subLuting[i].content.indexOf(l) > -1) {
+                            return -2;
+                        }
+                    }
+                }
+            }
             return -1;
         }
     }
