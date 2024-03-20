@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.optimize = exports.expandTimings = exports.finalizeLuting = exports.removeComments = exports.expandDefinitions = exports.equalTokens = exports.tokensToString = void 0;
 const myTokenParser_1 = require("../Language/myTokenParser");
+//Helper function to convert an array of lutingTokens to a string
 function tokensToString(tokens) {
     let returnString = "";
     for (var token of tokens) {
@@ -10,6 +11,7 @@ function tokensToString(tokens) {
     return returnString;
 }
 exports.tokensToString = tokensToString;
+//Helper function to check equality between two arrays of lutingTokens, where t1 === t2 iff t1.content === t2.content
 function equalTokens(t1s, t2s) {
     if (t1s.length !== t2s.length) {
         return false;
@@ -22,6 +24,7 @@ function equalTokens(t1s, t2s) {
     return true;
 }
 exports.equalTokens = equalTokens;
+//Helper function to expand all pre-existing definitions. Used for optimization
 function expandDefinitions(tokens) {
     let res = "";
     const definitionLookup = {};
@@ -184,6 +187,12 @@ function calculateUniqueSubstrings(tokens) {
             let inDef = 0;
             for (const tk of tempArr) {
                 if (tk.type === 'new-voice') {
+                    //Cannot contain new voice
+                    skipVoice = true;
+                    break;
+                }
+                else if (tk.type === 'instrument') {
+                    //Cannot contain instrument
                     skipVoice = true;
                     break;
                 }
@@ -230,6 +239,9 @@ function calculateUniqueSubstrings(tokens) {
     substringsWithGain.sort((a, b) => b.gain - a.gain);
     return substringsWithGain;
 }
+function squashRepeatedDefs(tokens, def) {
+    return [];
+}
 function totalLength(subLuting) {
     let cnt = 0;
     for (let l of subLuting) {
@@ -250,12 +262,14 @@ function optimize(tokens, maxItr) {
     removeComments(tokens);
     tokens = (0, myTokenParser_1.provideLutingTokensFromString)(expandDefinitions(tokens));
     for (let i = 0; i < maxItr; i++) {
+        //Finding the substrings with the best gain
         let sortedSubstrings = calculateUniqueSubstrings(tokens);
         if (sortedSubstrings[0].gain <= 0) {
             //no more optimizations possible!
             break;
         }
         let best = sortedSubstrings[0].tokenArr;
+        //Figuring out whether the optimization is local or global; use different naming respectively
         let localPosition = isLocalDef(tokens, best);
         let definitionName = "";
         if (localPosition < 0) {
@@ -270,14 +284,12 @@ function optimize(tokens, maxItr) {
         let numOccurrences = getLutingIndicesOf(tokens, best).length;
         let newDefinition = new myTokenParser_1.lutingToken(definitionName.concat('{'), "start-definition");
         let newDefEnd = new myTokenParser_1.lutingToken("}", "end-definition");
-        //base case: the definition
+        //Base case: the definition
         const insertLocation = getLutingIndexOf(tokens, best);
         //add the new definition start and end brackets
         tokens.splice(insertLocation, 0, newDefinition);
-        const bl = best.length;
-        const newLoc = insertLocation + bl + 1; //we add 1 since we included one more token
         tokens.splice(insertLocation + best.length + 1, 0, newDefEnd);
-        //replacing other occurrences by just the predefined-value
+        //Replacing other occurrences by just the predefined-value
         for (let j = 1; j < numOccurrences; j++) {
             const insertLocation = getSecondLutingIndexOf(tokens, best);
             let newDefinition = new myTokenParser_1.lutingToken(definitionName, "predefined-value");
