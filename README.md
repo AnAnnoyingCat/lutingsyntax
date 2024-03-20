@@ -59,6 +59,9 @@ This theme is based off of the "One Dark Pro Mix" theme.
 If, instead, you wish to modify your own theme to allow for Luting syntax highlight,
 simply follow the instructions in the customThemeInstructions file.
 
+To get started / inspired, I have included all of my personal lutings in .lute format in the folder "my lutings.zip"
+Happy Luting! hryAdmire
+
 ![alt text](conducting.webp)
 
 #### Created by [@AnAnnoyingCat](https://github.com/AnAnnoyingCat)
