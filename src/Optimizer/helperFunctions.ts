@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 
 import { lutingToken, provideLutingTokensFromString } from '../Language/myTokenParser';
-import { isUndefined } from 'util';
 
 //Helper function to convert an array of lutingTokens to a string
 export function tokensToString(tokens: lutingToken[]): string{
@@ -258,8 +257,10 @@ function squashRepeatedDefs(tokens: lutingToken[], def: lutingToken) : lutingTok
 				j++;
 			}
 			//now we need to replace the end-definition at replacePos (which currently is "}" by design) with "}localCnt"
-			tokens[replacePos].content = "}".concat(localCnt.toString());
-			tokens.splice(replacePos+1, localCnt-1);
+			if (localCnt > 1){
+				tokens[replacePos].content = "}".concat(localCnt.toString());
+				tokens.splice(replacePos+1, localCnt-1);
+			}
 		} else if (tokens[i].type === 'predefined-section' && tokens[i].content === def.content){
 			//We're counting now, boys!
 			rep = true;
@@ -299,6 +300,9 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		}
 	}
 
+	let lowestGlobalDef = "Z";
+	let hightestLocalDef = "A";
+
 	removeComments(tokens);
 
 	tokens = provideLutingTokensFromString(expandDefinitions(tokens));
@@ -308,8 +312,12 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		//Finding the substrings with the best gain
 		let sortedSubstrings = calculateUniqueSubstrings(tokens);
 
-		if (sortedSubstrings[0].gain <= 0){
+		if (sortedSubstrings[0].gain <= 0 || hightestLocalDef === lowestGlobalDef){
 			//no more optimizations possible!
+			//either no more optimizations present or ran out of definitions.
+			if (hightestLocalDef === lowestGlobalDef){
+				console.log("ran out of defs");
+			}
 			break;
 		}
 
@@ -321,10 +329,16 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 		if (localPosition < 0){
 			//not local
 			definitionName = globalDefsToUse[0];
+			if (lowestGlobalDef > definitionName){
+				lowestGlobalDef = definitionName;
+			}
 			globalDefsToUse.splice(0, 1);
 			
 		} else {
 			definitionName = localDefsToUse[localPosition][0];
+			if (hightestLocalDef < definitionName){
+				hightestLocalDef = definitionName;
+			}
 			localDefsToUse[localPosition].splice(0, 1);
 		}
 
@@ -343,7 +357,7 @@ export function optimize(tokens: lutingToken[], maxItr: number): string{
 			let newDefinition = new lutingToken(definitionName, "predefined-section");
 			tokens.splice(insertLocation, best.length, newDefinition);
 		}
-		tokens = squashRepeatedDefs(tokens, new lutingToken(definitionName, "predefined-section"));
+		//tokens = squashRepeatedDefs(tokens, new lutingToken(definitionName, "predefined-section"));
 	}
 	const resultingLuting = tokensToString(tokens);
 	return resultingLuting;
