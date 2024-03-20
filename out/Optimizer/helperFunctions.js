@@ -33,10 +33,11 @@ function expandDefinitions(tokens) {
     for (var token of tokens) {
         if (inDefinition > 0) {
             if (!(token.type === 'end-definition' || token.type === 'start-definition' || token.type === 'predefined-section')) {
+                //Add to innermost definitions
                 currentDefinition[currentDefinition.length - 1] = currentDefinition[currentDefinition.length - 1].concat(token.content.toString());
             }
         }
-        //now we finally take care of any new definitions or definitions which need expanding
+        //Now we take care of any definitions happening
         if (token.type === 'start-definition') {
             const defName = token.content.match(/[A-Z]/);
             if (defName) {
@@ -114,6 +115,7 @@ function expandDefinitions(tokens) {
     return res;
 }
 exports.expandDefinitions = expandDefinitions;
+//Simple helper function that discards comments
 function removeComments(tokens) {
     for (let i = 0; i < tokens.length; i++) {
         if (tokens[i].type === 'comment') {
@@ -124,11 +126,13 @@ function removeComments(tokens) {
     return tokens;
 }
 exports.removeComments = removeComments;
+//Return a cheerable luting string by removing comments and newlines first
 function finalizeLuting(tokens) {
     removeComments(tokens);
     return tokensToString(tokens);
 }
 exports.finalizeLuting = finalizeLuting;
+//WIP expands all notes into their fully written out durations
 function expandTimings(tokens) {
     //only works on lutings which had their definition expanded!
     let currentTime = "1";
@@ -174,6 +178,7 @@ function expandTimings(tokens) {
     return tokens;
 }
 exports.expandTimings = expandTimings;
+//The meat of the optimizer: For all unique substrings calculate how many seperate times they occur and return the strings with their potential gain
 function calculateUniqueSubstrings(tokens) {
     const substringSet = new Set();
     const tokenSubArraySet = new Set();
@@ -227,7 +232,6 @@ function calculateUniqueSubstrings(tokens) {
             }
         }
     }
-    let substringArr = Array.from(substringSet);
     let tokenArrArr = Array.from(tokenSubArraySet);
     // Calculate gain for each substring
     const substringsWithGain = tokenArrArr.map(tokenArr => {
@@ -239,16 +243,66 @@ function calculateUniqueSubstrings(tokens) {
     substringsWithGain.sort((a, b) => b.gain - a.gain);
     return substringsWithGain;
 }
+//Helper function that squashes all repeated definitions into one. E.g. AAAA = A4
 function squashRepeatedDefs(tokens, def) {
-    return [];
-}
-function totalLength(subLuting) {
     let cnt = 0;
-    for (let l of subLuting) {
-        cnt += l.length;
+    let rep = false;
+    let repStart = 0;
+    for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i].type === 'start-definition' && tokens[i].content.charAt(0) === def.content) {
+            let j = i + 1;
+            let inDef = 1;
+            for (; j < tokens.length; j++) {
+                if (tokens[j].type === 'end-definition') {
+                    inDef--;
+                    if (inDef === 0) {
+                        break;
+                    }
+                }
+                else if (tokens[j].type === 'start-definition') {
+                    inDef++;
+                }
+            }
+            let localCnt = 1;
+            let replacePos = j;
+            j++;
+            while (j < tokens.length && tokens[j].type === 'predefined-section' && tokens[j].content === def.content) {
+                localCnt++;
+                j++;
+            }
+            //now we need to replace the end-definition at replacePos (which currently is "}" by design) with "}localCnt"
+            tokens[replacePos].content = "}".concat(localCnt.toString());
+            tokens.splice(replacePos + 1, localCnt - 1);
+        }
+        else if (tokens[i].type === 'predefined-section' && tokens[i].content === def.content) {
+            //We're counting now, boys!
+            rep = true;
+            repStart = i;
+            cnt++;
+        }
+        else {
+            if (rep && cnt > 1) {
+                //we were counting reps but this one doesn't match up. We found a squashable section though.
+                tokens[i - cnt].content = tokens[i - cnt].content.concat(cnt.toString());
+                tokens.splice(i - cnt + 1, cnt - 1);
+                i -= cnt;
+                rep = false;
+                cnt = 0;
+            }
+            else if (rep) {
+                //we just counted one occurrence.
+                rep = false;
+                cnt = 0;
+            }
+        }
     }
-    return cnt;
+    if (cnt > 1) {
+        tokens[tokens.length - cnt].content = tokens[tokens.length - cnt].content.concat(cnt.toString());
+        tokens.splice(tokens.length - cnt + 1, cnt - 1);
+    }
+    return tokens;
 }
+//The big one. Calculates the substring with largest gain and greedily define and replace it.
 function optimize(tokens, maxItr) {
     let globalDefsToUse = ["Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A"];
     let numVoices = getLutingIndicesOf(tokens, [new myTokenParser_1.lutingToken("|", "new-voice")]).length + 1;
@@ -292,14 +346,16 @@ function optimize(tokens, maxItr) {
         //Replacing other occurrences by just the predefined-value
         for (let j = 1; j < numOccurrences; j++) {
             const insertLocation = getSecondLutingIndexOf(tokens, best);
-            let newDefinition = new myTokenParser_1.lutingToken(definitionName, "predefined-value");
+            let newDefinition = new myTokenParser_1.lutingToken(definitionName, "predefined-section");
             tokens.splice(insertLocation, best.length, newDefinition);
         }
+        tokens = squashRepeatedDefs(tokens, new myTokenParser_1.lutingToken(definitionName, "predefined-section"));
     }
     const resultingLuting = tokensToString(tokens);
     return resultingLuting;
 }
 exports.optimize = optimize;
+//Helper function to find out whether a definition is contained within just one voice and if so in which.
 function isLocalDef(luting, subLuting) {
     let substrPositions = getLutingIndicesOf(luting, subLuting);
     let newVoicePositions = getLutingIndicesOf(luting, [new myTokenParser_1.lutingToken("|", "new-voice")]);
@@ -318,6 +374,15 @@ function isLocalDef(luting, subLuting) {
     }
     return localPos;
 }
+//Helper function that returns the total length of the string captured by an array of lutingTokens
+function totalLength(subLuting) {
+    let cnt = 0;
+    for (let l of subLuting) {
+        cnt += l.length;
+    }
+    return cnt;
+}
+//Get all indices of a subset of lutingTokens occurring within an array of lutingToken
 function getLutingIndicesOf(luting, subLuting) {
     var searchLutingLength = luting.length;
     if (searchLutingLength === 0) {
@@ -330,6 +395,7 @@ function getLutingIndicesOf(luting, subLuting) {
     }
     return indices;
 }
+//Get the index of the first occurrence of a lutingToken[] appearing AFTER the start-index
 function getLutingIndexAfter(luting, subLuting, start) {
     const subLutingLength = subLuting.length;
     for (let i = start; i <= luting.length - subLutingLength; i++) {
@@ -339,6 +405,7 @@ function getLutingIndexAfter(luting, subLuting, start) {
     }
     return -1;
 }
+//Get the index of the first occurrence of a lutingToken[] starting at 0
 function getLutingIndexOf(luting, subLuting) {
     const subLutingLength = subLuting.length;
     for (let i = 0; i <= luting.length - subLutingLength; i++) {
@@ -348,6 +415,7 @@ function getLutingIndexOf(luting, subLuting) {
     }
     return -1;
 }
+//Get the position of the second occurrence of a lutingToken[], used for compacting definitions.
 function getSecondLutingIndexOf(luting, subLuting) {
     const subLutingLength = subLuting.length;
     let cnt = 0;
