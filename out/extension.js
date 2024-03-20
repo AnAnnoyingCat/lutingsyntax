@@ -165,7 +165,7 @@ function activate(context) {
                     vscode.window.showInformationMessage("Here are the test results!");
                 }
                 else {
-                    vscode.window.showErrorMessage("Failed to add the unjambled luting to the file");
+                    vscode.window.showErrorMessage("Failed to add the testResults file");
                 }
             });
         }
