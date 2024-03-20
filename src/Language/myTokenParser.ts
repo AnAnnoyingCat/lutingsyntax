@@ -182,6 +182,7 @@ export function provideLutingTokensFromString(inputText: string): lutingToken[] 
                     lineIndex += fullString.length;
                 } else if (char){
                     lutingTokens.push(new lutingToken(char, "time"));
+                    lineIndex += char.length;
                 }
             } else if (char.match(/\d/)) {
                 // Match fraction

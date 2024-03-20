@@ -197,6 +197,7 @@ function provideLutingTokensFromString(inputText) {
                 }
                 else if (char) {
                     lutingTokens.push(new lutingToken(char, "time"));
+                    lineIndex += char.length;
                 }
             }
             else if (char.match(/\d/)) {
