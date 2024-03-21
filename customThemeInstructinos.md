@@ -82,7 +82,7 @@
       }
     }
 ```
-This should make your theme capable of rendering the information of which part of the Luting is which.
+This should make your theme capable of rendering the Luting syntax-highlighting.
 If you wish to further modify the specific colors, here is a list of all the tokens the language uses:
 ```sh
 All the possible types of tokens:
