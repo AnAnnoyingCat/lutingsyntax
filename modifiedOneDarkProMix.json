@@ -72,6 +72,12 @@
         }
     },
     {
+      "scope": "source side",
+      "settings": {
+          "foreground": "#aeb4b5"
+      }
+    },
+    {
         "scope": "source time",
         "settings": {
             "foreground": "#aeb4b5"

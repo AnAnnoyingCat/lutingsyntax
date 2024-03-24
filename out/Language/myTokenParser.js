@@ -14,7 +14,8 @@ exports.provideLutingTokensFromString = exports.lutingToken = void 0;
     'new-voice',
     'octave-change',
     'luting-header',
-    'comment'
+    'comment',
+    'side'
 */
 class lutingToken {
     /*
@@ -184,6 +185,14 @@ function provideLutingTokensFromString(inputText) {
                 const match = line.substring(lineIndex).match(/^v\d?/);
                 if (match) {
                     lutingTokens.push(new lutingToken(match[0], "volume"));
+                    lineIndex += match[0].length;
+                }
+            }
+            else if (char === 's') {
+                // Match volume
+                const match = line.substring(lineIndex).match(/^s\d?/);
+                if (match) {
+                    lutingTokens.push(new lutingToken(match[0], "side"));
                     lineIndex += match[0].length;
                 }
             }

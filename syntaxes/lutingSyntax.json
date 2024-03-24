@@ -16,6 +16,10 @@
 		"match": "v\\d"
 	  },
 	  {
+		"name": "side",
+		"match": "s\\d"
+	  },
+	  {
 		"name": "fraction",
 		"match": "(?:\\d+/\\d+|\\d+|/\\d+)"
 	  },

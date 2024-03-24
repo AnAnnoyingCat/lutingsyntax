@@ -13,7 +13,8 @@ import * as vscode from 'vscode';
     'new-voice',
     'octave-change',
     'luting-header',
-    'comment'
+    'comment',
+    'side'
 */
 
 export class lutingToken{
@@ -171,6 +172,13 @@ export function provideLutingTokensFromString(inputText: string): lutingToken[] 
                 const match = line.substring(lineIndex).match(/^v\d?/);
                 if (match) {
                     lutingTokens.push(new lutingToken(match[0], "volume"));
+                    lineIndex += match[0].length;
+                }
+            } else if (char === 's') {
+                // Match volume
+                const match = line.substring(lineIndex).match(/^s\d?/);
+                if (match) {
+                    lutingTokens.push(new lutingToken(match[0], "side"));
                     lineIndex += match[0].length;
                 }
             } else if (char === 't') {
