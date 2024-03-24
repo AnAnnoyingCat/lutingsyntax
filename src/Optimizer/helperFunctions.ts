@@ -2,7 +2,11 @@ import * as vscode from 'vscode';
 
 import { lutingToken, provideLutingTokensFromString } from '../Language/myTokenParser';
 
-//Helper function to convert an array of lutingTokens to a string
+    /**
+     * Helper function to convert an array of lutingTokens to a string.
+     * @param tokens The array of lutingTokens to convert
+	 * @returns The string resulting from concatenating all contents of tokens in lutingToken.
+     */
 export function tokensToString(tokens: lutingToken[]): string{
 	let returnString = "";
 	for (var token of tokens){
@@ -11,7 +15,12 @@ export function tokensToString(tokens: lutingToken[]): string{
 	return returnString;
 }
 
-//Helper function to check equality between two arrays of lutingTokens, where t1 === t2 iff t1.content === t2.content
+    /**
+     * Helper function to check equality of two arrays of lutingTokens, where t1 === t2 iff t1.content === t2.content.
+     * @param t1s The first array of tokens
+	 * @param t2s The second array of tokens
+	 * @returns True iff t1s and t2s are equal.
+     */
 export function equalTokens(t1s: lutingToken[], t2s: lutingToken[]): boolean{
 	if (t1s.length !== t2s.length){
 		return false;
@@ -24,7 +33,12 @@ export function equalTokens(t1s: lutingToken[], t2s: lutingToken[]): boolean{
 	return true;
 }
 
-//Helper function to expand all pre-existing definitions. Used for optimization
+
+    /**
+     * Helper function to expand all pre-existing definitions. Used for optimization
+     * @param tokens The array of lutingTokens to expand
+	 * @return The array of lutingTokens resulting from expanding all definitions fully.
+     */
 export function expandDefinitions(tokens: lutingToken[]): string{
 	let res: string = "";
 	const definitionLookup: { [key: string] : string } = {};
@@ -106,7 +120,11 @@ export function expandDefinitions(tokens: lutingToken[]): string{
 	return res;
 }
 
-//Simple helper function that discards comments
+    /**
+     * Simple helper functino to remove comments
+     * @param tokens The array of lutingTokens to remove comments from
+	 * @return The array of lutingTokens with all type 'comment' tokens removed
+     */
 export function removeComments(tokens: lutingToken[]): lutingToken[]{
 	for (let i = 0; i < tokens.length; i++){
 		if (tokens[i].type === 'comment'){
@@ -117,13 +135,23 @@ export function removeComments(tokens: lutingToken[]): lutingToken[]{
 	return tokens;
 }
 
-//Return a cheerable luting string by removing comments and newlines first
+
+    /**
+     * Return a cheerable luting string by removing comments and newlines first
+     * @param tokens The array of lutingTokens to finalize
+	 * @return The finallized string
+     */
 export function finalizeLuting(tokens: lutingToken[]): string{
 	removeComments(tokens);
 	return tokensToString(tokens);
 }
 
-//WIP expands all notes into their fully written out durations
+
+    /**
+     * WIP expands all notes into their fully written out durations
+     * @param tokens The array of lutingTokens to expand
+	 * @returns The array of expanded tokens.
+     */
 export function expandTimings(tokens: lutingToken[]): lutingToken[]{
 	//only works on lutings which had their definition expanded!
 	let currentTime = "1";
@@ -165,7 +193,11 @@ export function expandTimings(tokens: lutingToken[]): lutingToken[]{
 	return tokens;
 }
 
-//The meat of the optimizer: For all unique substrings calculate how many seperate times they occur and return the strings with their potential gain
+    /**
+     * Calculate all legal unique subarrays of a given array of a luting and calculate their possible gain from definition
+     * @param tokens The array of lutingTokens to check
+	 * @returns A map of array of lutingToken to the possible gain
+     */
 function calculateUniqueSubstrings(tokens: lutingToken[]): { tokenArr: lutingToken[], gain: number }[] {
 	const substringSet = new Set<string>();
 	const tokenSubArraySet = new Set<lutingToken[]>();
@@ -229,7 +261,12 @@ function calculateUniqueSubstrings(tokens: lutingToken[]): { tokenArr: lutingTok
     return substringsWithGain;
 }
 
-//Helper function that squashes all repeated definitions into one. E.g. AAAA = A4
+
+    /**
+     * Helper function that squashes all repeated definitions into one. E.g. AAAA = A4
+     * @param tokens The array of lutingTokens to squash
+	 * @returns The squashed array
+     */
 function squashRepeatedDefs(tokens: lutingToken[], def: lutingToken) : lutingToken[]{
 	let cnt = 0;
 	let rep: boolean = false;
@@ -288,7 +325,14 @@ function squashRepeatedDefs(tokens: lutingToken[], def: lutingToken) : lutingTok
 	return tokens;
 }
 
-//The big one. Calculates the substring with largest gain and greedily define and replace it.
+    /**
+     * Optimize a given luting according to certain parameters
+     * @param tokens The array of lutingTokens to optimize
+	 * @param maxItr The max number of iterations to optimize for
+	 * @param safe 	 True: Optimize safely and produce a guaranteed correct result; False: Optimize unsafely
+	 * @param quick	 True: Perform optimization without expanding definitions first
+	 * @returns A string of the optimized luting
+     */
 export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, quick: boolean): string{
 	let globalDefsToUse: string[] = ["Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A"];
 	let numVoices = getLutingIndicesOf(tokens, [new lutingToken("|", "new-voice")]).length + 1;
@@ -299,8 +343,6 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 			localDefsToUse[i].push(globalDefsToUse[j]);
 		}
 	}
-	//let Chatting = vscode.window.createOutputChannel("Chatting");
-	//Chatting.show();
 	let lowestGlobalDef = "Z";
 	let hightestLocalDef = "A";
 	//used for tracking legality of best transformation
@@ -369,18 +411,23 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 		}
 		//squash down the current definition
 		tokens = squashRepeatedDefs(tokens, new lutingToken(definitionName, "predefined-section"));
-		//log all definitions for testing purposes
-		//Chatting.appendLine('\n' + tokensToString(tokens));
 	}
 	const resultingLuting = tokensToString(tokens);
 	return resultingLuting;
 }
 
-//Helper function to find out whether a definition is contained within just one voice and if so in which.
-function isLocalDef(luting: lutingToken[], subLuting: lutingToken[], currentLocalChar: string, safe: boolean){
+    /**
+     * Helper function to find out whether a definition is contained within just one voice, and if so in which, and whether it's a safe or unsafe definition.
+     * @param tokens 			The array of lutingTokens to check over
+	 * @param subLuting 		The to-be-defined array of lutingTokens
+	 * @param currentLocalChar 	The current locally defined character appearing latest in the alphabet; Used for safety-testing.
+	 * @param safe 				If set to true checks for safety
+	 * @returns 				-2 if "safe" is set to true and the def is unsafe , -1 if the definition is global and a positive number representing the voice where the def is present otherwise.
+     */
+function isLocalDef(tokens: lutingToken[], subLuting: lutingToken[], currentLocalChar: string, safe: boolean){
 
-	let substrPositions  = getLutingIndicesOf(luting, subLuting);
-	let newVoicePositions = getLutingIndicesOf(luting, [new lutingToken("|", "new-voice")]);
+	let substrPositions  = getLutingIndicesOf(tokens, subLuting);
+	let newVoicePositions = getLutingIndicesOf(tokens, [new lutingToken("|", "new-voice")]);
 	newVoicePositions.unshift(0);
 	let localPos = 0;
 	for (;localPos < newVoicePositions.length; localPos++){
@@ -409,61 +456,86 @@ function isLocalDef(luting: lutingToken[], subLuting: lutingToken[], currentLoca
 	return localPos;
 }
 
-//Helper function that returns the total length of the string captured by an array of lutingTokens
-function totalLength(subLuting: lutingToken[]): number{
+    /**
+     * Helper function to find out whether a definition is contained within just one voice, and if so in which, and whether it's a safe or unsafe definition.
+     * @param tokens 			The array of lutingTokens to count.
+	 * @returns 				Length of the string resulting from concatenating all the contents
+     */
+function totalLength(tokens: lutingToken[]): number{
 	let cnt = 0; 
-	for (let l of subLuting){
+	for (let l of tokens){
 		cnt += l.length;
 	}
 	return cnt;
 }
 
-//Get all indices of a subset of lutingTokens occurring within an array of lutingToken
-function getLutingIndicesOf(luting: lutingToken[], subLuting: lutingToken[]){
-	var searchLutingLength = luting.length;
+    /**
+     * Get all indices of a subset of lutingTokens occurring within an array of lutingToken
+     * @param tokens 			The array of lutingTokens to check.
+	 * @param subLuting			The subLuting to check for
+	 * @returns 				Array of indices of lutingTokens
+     */
+function getLutingIndicesOf(tokens: lutingToken[], subLuting: lutingToken[]){
+	var searchLutingLength = tokens.length;
 	if (searchLutingLength === 0){
 		return [];
 	}
 	var startIndex = 0, index, indices = [];
-	while ((index = getLutingIndexAfter(luting, subLuting, startIndex)) > -1){
+	while ((index = getLutingIndexAfter(tokens, subLuting, startIndex)) > -1){
 		indices.push(index);
 		startIndex = index + subLuting.length;
 	}
 	return indices;
 }
 
-//Get the index of the first occurrence of a lutingToken[] appearing AFTER the start-index
-function getLutingIndexAfter(luting: lutingToken[], subLuting: lutingToken[], start: number){
+   /**
+     * Get the index of the first occurrence of a lutingToken[] appearing AFTER the start-index
+     * @param tokens 			The array of lutingTokens to check.
+	 * @param subLuting			The subLuting to check for.
+	 * @param start				The start-index
+	 * @returns 				Position of first occurrence, -1 if none found.
+     */
+function getLutingIndexAfter(tokens: lutingToken[], subLuting: lutingToken[], start: number){
 	const subLutingLength = subLuting.length;
-	for (let i = start; i <= luting.length - subLutingLength; i++){
-		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
+	for (let i = start; i <= tokens.length - subLutingLength; i++){
+		if (equalTokens(subLuting, tokens.slice(i, i+subLutingLength))){
 			return i;
 		}
 	}
 	return -1;
 }
 
-//Get the index of the first occurrence of a lutingToken[] starting at 0
-function getLutingIndexOf(luting: lutingToken[], subLuting: lutingToken[]){
+  /**
+     * Get the index of the first occurrence of a lutingToken[]
+     * @param tokens 			The array of lutingTokens to check.
+	 * @param subLuting			The subLuting to check for.
+	 * @returns 				Position of first occurrence, -1 if none found.
+     */
+function getLutingIndexOf(tokens: lutingToken[], subLuting: lutingToken[]){
 	const subLutingLength = subLuting.length;
-	for (let i = 0; i <= luting.length - subLutingLength; i++){
-		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
+	for (let i = 0; i <= tokens.length - subLutingLength; i++){
+		if (equalTokens(subLuting, tokens.slice(i, i+subLutingLength))){
 			return i;
 		}
 	}
 	return -1;
 }
 
-//Get the position of the second occurrence of a lutingToken[], used for compacting definitions.
-function getSecondLutingIndexOf(luting: lutingToken[], subLuting: lutingToken[]){
+  /**
+     * Get the index of the second occurrence of a lutingToken[].
+     * @param tokens 			The array of lutingTokens to check.
+	 * @param subLuting			The subLuting to check for.
+	 * @returns 				Position of secnd occurrence, -1 if none found.
+     */
+function getSecondLutingIndexOf(tokens: lutingToken[], subLuting: lutingToken[]){
 	const subLutingLength = subLuting.length;
 	let cnt = 0;
 	let i = 0;
-	for (; i <= luting.length - subLutingLength && cnt !== 2; i++){
+	for (; i <= tokens.length - subLutingLength && cnt !== 2; i++){
 		if (i === 925){
 			let breakpoint = 3;
 		}
-		if (equalTokens(subLuting, luting.slice(i, i+subLutingLength))){
+		if (equalTokens(subLuting, tokens.slice(i, i+subLutingLength))){
 			cnt++;
 		}
 	}
