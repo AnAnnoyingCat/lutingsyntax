@@ -20,8 +20,8 @@
         "extensions": [".lute"],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./src/Images/luting.png",
-          "dark": "./src/Images/luting.png"
+          "light": "./luting.png",
+          "dark": "./luting.png"
         }
       }
     ],
@@ -29,8 +29,7 @@
       {
         "language": "luting",
         "scopeName": "source.luting",
-        "path": "./src/syntaxes/lutingSyntax.json"
-        
+        "path": "./syntaxes/lutingSyntax.json"
       }
     ],
     "themes": [

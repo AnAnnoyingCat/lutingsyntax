@@ -1,7 +1,7 @@
 # Extending your theme with Luting Highlighting
 
 - Find your Theme's .json file.
-- Under the category "tokenColors": add the following tokenColors:
+- Under the category "tokenColors": [ add the following tokenColors:
 ```sh
     {
       "scope": "source note",
