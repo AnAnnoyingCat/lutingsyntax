@@ -61,7 +61,7 @@ simply follow the instructions in the customThemeInstructions file.
 To get started / inspired, I have included all of my personal lutings in .lute format in the folder "my lutings.zip"  
 Happy Luting! hryAdmire
 
-![conducting](conducting.webp)
+![conducting](src/Images/conducting.webp)
 
 #### Created by [@AnAnnoyingCat](https://github.com/AnAnnoyingCat)
 ##### Discord: @justanannoyingcat
