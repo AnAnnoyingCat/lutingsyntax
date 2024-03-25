@@ -54,7 +54,7 @@ export function provideLutingTokensFromString(inputText: string): lutingToken[] 
                 lineIndex++;
             } else if (char === '/' && line.substring(lineIndex+1, lineIndex+2) === '/') {
                 // Match comment
-                const commentBody = line.substring(lineIndex+2).match(/[^]*(?=\/\/|$)/);
+                const commentBody = line.substring(lineIndex+2).match(/[^]*?(?=\/\/|$)/);
                 const commentEnd = line.substring(lineIndex+2).match(/\/\//);
 
                 if (char && commentBody){
