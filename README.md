@@ -68,4 +68,5 @@ Happy Luting! hryAdmire
 ![conducting](Images/conducting.webp)
 
 #### Created by [@AnAnnoyingCat](https://github.com/AnAnnoyingCat)
+#### Source code can be found on [GitHub](https://github.com/AnAnnoyingCat/lutingsyntax)
 ##### Discord: @justanannoyingcat
