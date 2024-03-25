@@ -54,8 +54,7 @@ Luting in VS Code supports two commands for cheering Lutings:
 | Generate cheerable String | Adds the Luting message already including "Cheer1" to clipboard.|
 
 ## Installation
-Simply download the .vsix from the gitHub and install it via:
-VS Code Extensions -> ... -> Install from VSIX.
+Simply install this Extension directly from the marketplace.
 
 To enable the Luting theme select the theme "Luting Syntax Highlights" from your available themes.
 This theme is based off of the "One Dark Pro Mix" theme.
