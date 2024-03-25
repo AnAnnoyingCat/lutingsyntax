@@ -20,8 +20,8 @@
         "extensions": [".lute"],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./luting.png",
-          "dark": "./luting.png"
+          "light": "./Images/luting.png",
+          "dark": "./Images/luting.png"
         }
       }
     ],
