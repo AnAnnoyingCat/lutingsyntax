@@ -1,12 +1,17 @@
 import * as vscode from 'vscode';
-import { printTokens } from './Language/tokenPrinter';
 import { lutingToken } from './Language/myTokenParser';
-import * as helper from "./Optimizer/helperFunctions";
+import * as helper from "./helperFunctions";
 import { provideLutingTokensFromString } from './Language/myTokenParser';
+import axios from 'axios';
+import * as querystring from 'querystring';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
 
-    // Command to turn current .lute file into a cheerable luting string and copy it to clipboard.
+    /**
+    * Command to create a String from current .lute file and Paste it into the users clipboard.
+    */
     const finalizeLuting = 'lutingsyntax.finalize';
     const finalizeLutingCommandHandler = async () => {
         // Get the active text editor
@@ -14,6 +19,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
@@ -30,7 +39,9 @@ export function activate(context: vscode.ExtensionContext) {
         }
     };
 
-    //Command to return cheerable string from current luting.
+    /**
+    * Command to create a cheerable string from current luting and paste it into the user's clipboard.
+    */
     const cheerableLuting = 'lutingsyntax.cheer';
     const cheerableLutingCommandHandler = async () => {
         // Get the active text editor
@@ -38,6 +49,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
@@ -53,8 +68,10 @@ export function activate(context: vscode.ExtensionContext) {
     };
 
 
-    // Safe Optimize command
-    // Implements additional correctness guarantees at the cost of possible gain
+    /**
+    * Safely Optimize the current Luting. Guarantees correctness of final result.
+    * Possibly worse result than unsafe due to better guarantees.
+    */
     const safeOptimizeCommand = 'lutingsyntax.safeoptimize';
     const safeOptimizeCommandHandler = async () => {
         // Get the active text editor
@@ -62,6 +79,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
@@ -88,8 +109,10 @@ export function activate(context: vscode.ExtensionContext) {
         }
     };
 
-    // Unsafe Optimize command
-    // Is most probably correct but not guaranteed, possibly better gain
+    /**
+    * Unsafely optimize current Luting. Result may not be correct, but most likely will be. 
+    * Possibly better results than safe optimization due to less guarantees.
+    */
     const unsafeOptimizeCommand = 'lutingsyntax.unsafeoptimize';
     const unsafeOptimizeCommandHandler = async () => {
         // Get the active text editor
@@ -97,6 +120,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
@@ -122,8 +149,11 @@ export function activate(context: vscode.ExtensionContext) {
             vscode.window.showErrorMessage('No active text editor found.');
         }
     };
-    // Quick Optimize command
-    // Is most probably correct but not guaranteed, possibly better gain
+
+    /**
+    * Optimize current luting without expanding definitions first.
+    * Is not safe.
+    */
     const quickOptimizeCommand = 'lutingsyntax.quickoptimize';
     const quickOptimizeCommandHandler = async () => {
         // Get the active text editor
@@ -131,6 +161,10 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
@@ -157,7 +191,64 @@ export function activate(context: vscode.ExtensionContext) {
         }
     };
 
-    // Register a language feature provider for the lute language
+    /**
+    * Command to download current .lute file into Lute-Out folder.
+    */
+    const downloadCommand = 'lutingsyntax.download';
+    const downloadCommandHandler = async () => {
+        // Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            // Get the current tokens of the active document
+            const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
+            const finalizedLuting = helper.finalizeLuting(myTokens);
+
+            try {
+                // Make a GET request to download the lute file
+                const luteFile = await helper.downloadLuteFile(finalizedLuting);
+
+                // Save the lute file to the Luting-Out directory
+                const luteFileName = path.basename(documentUri.fsPath, path.extname(documentUri.fsPath));
+                const luteOutDir = path.join(path.dirname(documentUri.fsPath), 'Luting-Out');
+                if (!fs.existsSync(luteOutDir)) {
+                    fs.mkdirSync(luteOutDir);
+                }
+                const luteOutFilePath = path.join(luteOutDir, `${luteFileName}.wav`);
+                fs.writeFileSync(luteOutFilePath, luteFile);
+
+                // Inform user about successful download
+                vscode.window.showInformationMessage(`Lute file downloaded successfully to ${luteOutFilePath}`);
+            } catch (error) {
+                // Show error message if the download fails
+                vscode.window.showErrorMessage("Something went wrong trying to download your luting.");
+            }
+        } else {
+            vscode.window.showErrorMessage('No active text editor found.');
+        }
+    };
+
+    /*
+                // Save the lute file to the Luting-Out directory
+                const luteFileName = path.basename(documentUri.fsPath, path.extname(documentUri.fsPath));
+                const luteOutDir = path.join(path.dirname(documentUri.fsPath), 'Luting-Out');
+                if (!fs.existsSync(luteOutDir)) {
+                    fs.mkdirSync(luteOutDir);
+                }
+                const luteOutFilePath = path.join(luteOutDir, `${luteFileName}.wav`);
+                fs.writeFileSync(luteOutFilePath, new Uint8Array(luteFile));
+    */
+
+
+    /**
+    * Test command used for developing the extension.
+    */
     const testCommand = 'lutingsyntax.testCommand';
     const testCommandHandler = async () => {
         // Get the active text editor
@@ -165,30 +256,21 @@ export function activate(context: vscode.ExtensionContext) {
         if (editor) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
-
-            const optimizedResult = helper.optimize(myTokens, 50, false, false);
-
-
-            //write back into the document
-            editor.edit(editBuilder => {
-                const lastLine = document.lineAt(document.lineCount - 1);
-                const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + optimizedResult + '\n');
-            }).then(success => {
-                if (success) {
-                    vscode.window.showInformationMessage("Here are the test results!");
-                } else {
-                    vscode.window.showErrorMessage("Failed to add the testResults file");
-                }
-            });
 
         } else {
             vscode.window.showErrorMessage('No active text editor found.');
         }
     };
+
+
+
     
     // Add the commands to the context subscriptions
     context.subscriptions.push(vscode.commands.registerCommand(finalizeLuting, finalizeLutingCommandHandler));
@@ -196,10 +278,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(unsafeOptimizeCommand, unsafeOptimizeCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(quickOptimizeCommand, quickOptimizeCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(cheerableLuting, cheerableLutingCommandHandler));
-    /*
-      {
-        "command": "lutingsyntax.testCommand",
-        "title": "Luting: Execute test command"
-      },
-      */
+    context.subscriptions.push(vscode.commands.registerCommand(downloadCommand, downloadCommandHandler));
+    //context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
 }

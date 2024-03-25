@@ -42,15 +42,19 @@
     "commands": [
       {
         "command": "lutingsyntax.finalize",
-        "title": "Luting: Finalize luting to clipboard!"
+        "title": "Luting: Finalize Luting to clipboard"
       },
       {
         "command": "lutingsyntax.safeoptimize",
-        "title": "Luting: Safe Optimization"
+        "title": "Luting: Safely optimize"
+      },
+      {
+        "command": "lutingsyntax.download",
+        "title": "Luting: Download your Luting"
       },
       {
         "command": "lutingsyntax.unsafeoptimize",
-        "title": "Luting: Unsafe Optimization"
+        "title": "Luting: Unsafely optimize"
       },
       {
         "command": "lutingsyntax.quickoptimize",

@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
+import axios from 'axios';
+import * as querystring from 'querystring';
+import * as fs from 'fs';
+import * as path from 'path';
 
-import { lutingToken, provideLutingTokensFromString } from '../Language/myTokenParser';
+import { lutingToken, provideLutingTokensFromString } from './Language/myTokenParser';
 
     /**
      * Helper function to convert an array of lutingTokens to a string.
@@ -543,4 +547,72 @@ function getSecondLutingIndexOf(tokens: lutingToken[], subLuting: lutingToken[])
 		return i-1;
 	}
 	return -1;
+}
+
+  /**
+     * Download the provided luting string from luteboi.com. Timeout 30 seconds.
+     * @param finalizedLuting	String of the finalized luting.
+	 * @returns 				The file returned by luteboi.com
+     */
+export async function downloadLuteFile(finalizedLuting: string) {
+        const baseUrl = 'https://luteboi.com/lute/';
+        const queryParams = querystring.stringify({ message: finalizedLuting });
+        const url = `${baseUrl}?${queryParams}`;
+
+        try {
+            const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 30000 });
+            return response.data;
+        } catch (error) {
+            throw new Error(`Failed to download the Luting. Hit timeout :(`);
+        }
+    }
+
+// Function to make a GET request to get the filename
+async function getLuteFileName(finalizedLuting: string) {
+    const baseUrl = 'https://luteboi.com/v2/lute/';
+    const queryParams = querystring.stringify({ message: finalizedLuting });
+    const url = `${baseUrl}?${queryParams}`;
+
+    try {
+        const response = await axios.get(url);
+        return response.data as string;
+    } catch (error) {
+        throw new Error(`Failed to get lute filename`);
+    }
+}
+
+// Function to make a POST request to download the lute file
+// Function to make a POST request to download the lute file
+export async function downloadLuteFilePrime(finalizedLuting: string) {
+    try {
+        // Get the filename from the server
+        const filename = await getLuteFileName(finalizedLuting);
+
+		// Define function to make a periodic request
+		const makePeriodicRequest = async (): Promise<ArrayBuffer> => {
+			try {
+				// Make a POST request to get the lute file
+				const getFileUrl = 'https://luteboi.com/v2/get_lute/';
+				const fileResponse = await axios.post(getFileUrl, { file: filename }, { responseType: 'arraybuffer' });
+
+				// If response contains data, return the file
+				if (fileResponse.data.byteLength > 0) {
+					return fileResponse.data;
+				} else {
+					// If response does not contain data, wait for 1 second and make another request
+					await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
+					return makePeriodicRequest();
+				}
+			} catch (error) {
+				// If an error occurs, wait for 1 second and make another request
+				await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
+				return makePeriodicRequest();
+			}
+		};
+
+        // Start the periodic request
+        return makePeriodicRequest();
+    } catch (error) {
+        throw new Error(`Failed to get lute filename`);
+    }
 }
