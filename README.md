@@ -7,6 +7,7 @@ Luting in VS Code is a small extension I made for the purpose of simplifying the
 
 - Custom .lute extension for Luting files
 - Commands to optimize character count of your Luting
+- A command to download a .wav from a .lute file
 - Custom Theme to enable Luting-specific syntax-highlighting in .lute files
 - Comments supported by the .lute extension
 - A Command to quickly copy a cheerable version of your Luting into your clipboard
@@ -40,6 +41,9 @@ Luting in VS Code supports three commands for optimizing your Lutings:
 
 As these commands brute-force check every substring multiple times,
 expect them to take up to around 15 seconds for very large lutings. Quick should be substantially faster.
+
+### Generation
+The command "Download your Luting" will create a folder called "Luting-Out" and get the .wav of the current .lute file from luteboi.com and save it there.
 
 ### Cheering
 

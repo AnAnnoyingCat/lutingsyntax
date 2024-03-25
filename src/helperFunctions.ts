@@ -560,10 +560,10 @@ export async function downloadLuteFile(finalizedLuting: string) {
         const url = `${baseUrl}?${queryParams}`;
 
         try {
-            const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 30000 });
+            const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 120000 });
             return response.data;
         } catch (error) {
-            throw new Error(`Failed to download the Luting. Hit timeout :(`);
+            throw new Error(`Failed to download the Luting.`);
         }
     }
 

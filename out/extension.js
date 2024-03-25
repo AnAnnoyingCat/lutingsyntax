@@ -234,16 +234,6 @@ function activate(context) {
             vscode.window.showErrorMessage('No active text editor found.');
         }
     };
-    /*
-                // Save the lute file to the Luting-Out directory
-                const luteFileName = path.basename(documentUri.fsPath, path.extname(documentUri.fsPath));
-                const luteOutDir = path.join(path.dirname(documentUri.fsPath), 'Luting-Out');
-                if (!fs.existsSync(luteOutDir)) {
-                    fs.mkdirSync(luteOutDir);
-                }
-                const luteOutFilePath = path.join(luteOutDir, `${luteFileName}.wav`);
-                fs.writeFileSync(luteOutFilePath, new Uint8Array(luteFile));
-    */
     /**
     * Test command used for developing the extension.
     */
