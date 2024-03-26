@@ -210,8 +210,7 @@ function provideLutingTokensFromString(inputText) {
                 }
             }
             else {
-                // Unrecognized token
-                //vscode.window.showErrorMessage("unrecognized character: ".concat(char.toString()));
+                // Unrecognized token; throwing an error.
                 throw new TypeError("unrecognized character: " + char.toString() + " in line " + i + ", char nr. " + (lineIndex + 1) + ".");
             }
         }
@@ -219,15 +218,4 @@ function provideLutingTokensFromString(inputText) {
     return lutingTokens;
 }
 exports.provideLutingTokensFromString = provideLutingTokensFromString;
-/*
-else if (char.match(/\d/)) {
-    // Match fraction
-    const match = line.substring(lineIndex).match(/^(\d+\/\d+|\d+|\/\d+)/);
-    if (match) {
-        //shouldn't get here!
-        console.log("oopsie woopsie found a fraction");
-        lutingTokens.push(new lutingToken(match[0], "fraction"));
-        lineIndex += match[0].length;
-    }
-} */ 
 //# sourceMappingURL=myTokenParser.js.map
