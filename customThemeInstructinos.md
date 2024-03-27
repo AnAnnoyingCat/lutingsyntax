@@ -2,6 +2,7 @@
 
 - Find your Theme's .json file.
 - Under the category "tokenColors": [ add the following tokenColors:
+
 ```sh
     {
       "scope": "source note",
@@ -82,8 +83,10 @@
       }
     }
 ```
+
 This should make your theme capable of rendering the Luting syntax-highlighting.
 If you wish to further modify the specific colors, here is a list of all the tokens the language uses:
+
 ```sh
 All the possible types of tokens:
     'instrument'
@@ -99,7 +102,9 @@ All the possible types of tokens:
     'octave-change'
     'luting-header'
     'comment'
+    'side'
 ```
 
 #### Created by [@AnAnnoyingCat](https://pages.github.com/)
+
 ##### Discord: @justanannoyingcat
