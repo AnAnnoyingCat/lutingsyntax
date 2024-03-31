@@ -536,9 +536,6 @@ function getSecondLutingIndexOf(tokens: lutingToken[], subLuting: lutingToken[])
 	let cnt = 0;
 	let i = 0;
 	for (; i <= tokens.length - subLutingLength && cnt !== 2; i++){
-		if (i === 925){
-			let breakpoint = 3;
-		}
 		if (equalTokens(subLuting, tokens.slice(i, i+subLutingLength))){
 			cnt++;
 		}
