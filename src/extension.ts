@@ -6,6 +6,7 @@ import axios from 'axios';
 import * as querystring from 'querystring';
 import * as fs from 'fs';
 import * as path from 'path';
+import { generateBestTimingPlacements } from './timingOptimizer';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -236,6 +237,48 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     /**
+    * Optimized timing compression.
+    */
+    const timedOptimizationCommand = 'lutingsyntax.timedOptimization';
+    const timedOptimizationCommandHandler = async () => {
+        // Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            // Get the current tokens of the active document
+            const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
+            helper.removeComments(myTokens);
+            myTokens = provideLutingTokensFromString(helper.expandDefinitions(myTokens));
+            let expandedTokens = helper.expandTimings(myTokens);
+            myTokens = generateBestTimingPlacements(expandedTokens);
+            
+            let timingOptimizedResult = helper.optimize(myTokens, 50, false, false);
+            
+            editor.edit(editBuilder => {
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const end = lastLine.range.end;
+                editBuilder.insert(end, '\n' + "//Timing-Optimized Luting: " + '\n' + timingOptimizedResult + '\n' + "//Luting length: " + timingOptimizedResult.length);
+
+            }).then(success => {
+                if (success) {
+                    //vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
+                } else {
+                    vscode.window.showErrorMessage("Failed to writeback optimized luting...");
+                }
+            });
+
+        } else {
+            vscode.window.showErrorMessage('No active text editor found.');
+        }
+    };
+
+    /**
     * Test command used for developing the extension.
     */
     const testCommand = 'lutingsyntax.testCommand';
@@ -252,6 +295,19 @@ export function activate(context: vscode.ExtensionContext) {
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
+            /*
+            editor.edit(editBuilder => {
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const end = lastLine.range.end;
+                editBuilder.insert(end, '\n' + "//test result: " + '\n' + helper.tokensToString(myTokens) + '\n');
+
+            }).then(success => {
+                if (success) {
+                    //vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
+                } else {
+                    vscode.window.showErrorMessage("Failed to writeback optimized luting...");
+                }
+            });*/
 
         } else {
             vscode.window.showErrorMessage('No active text editor found.');
@@ -268,5 +324,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(quickOptimizeCommand, quickOptimizeCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(cheerableLuting, cheerableLutingCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(downloadCommand, downloadCommandHandler));
-    //context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(timedOptimizationCommand, timedOptimizationCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
 }

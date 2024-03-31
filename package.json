@@ -65,6 +65,10 @@
       {
         "command": "lutingsyntax.cheer",
         "title": "Luting: Generate Cheerable string"
+      },
+      {
+        "command": "lutingsyntax.timedOptimization",
+        "title": "Luting: Perform timing optimization"
       }
     ]
   },

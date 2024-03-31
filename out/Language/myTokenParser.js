@@ -15,7 +15,8 @@ exports.provideLutingTokensFromString = exports.lutingToken = void 0;
     'octave-change',
     'luting-header',
     'comment',
-    'side'
+    'side',
+    'chord'
 */
 class lutingToken {
     /*

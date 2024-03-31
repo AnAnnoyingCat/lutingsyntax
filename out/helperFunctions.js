@@ -26,7 +26,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.downloadLuteFilePrime = exports.downloadLuteFile = exports.optimize = exports.expandTimings = exports.finalizeLuting = exports.removeComments = exports.expandDefinitions = exports.equalTokens = exports.tokensToString = void 0;
+exports.downloadLuteFile = exports.getLutingIndicesOf = exports.optimize = exports.expandTimings = exports.finalizeLuting = exports.removeComments = exports.expandDefinitions = exports.equalTokens = exports.tokensToString = void 0;
 const axios_1 = __importDefault(require("axios"));
 const querystring = __importStar(require("querystring"));
 const myTokenParser_1 = require("./Language/myTokenParser");
@@ -64,7 +64,7 @@ exports.equalTokens = equalTokens;
 /**
  * Helper function to expand all pre-existing definitions. Used for optimization
  * @param tokens The array of lutingTokens to expand
- * @return The array of lutingTokens resulting from expanding all definitions fully.
+ * @return The String of lutingTokens resulting from expanding all definitions fully.
  */
 function expandDefinitions(tokens) {
     let res = "";
@@ -516,6 +516,7 @@ function getLutingIndicesOf(tokens, subLuting) {
     }
     return indices;
 }
+exports.getLutingIndicesOf = getLutingIndicesOf;
 /**
   * Get the index of the first occurrence of a lutingToken[] appearing AFTER the start-index
   * @param tokens 			The array of lutingTokens to check.
@@ -558,9 +559,6 @@ function getSecondLutingIndexOf(tokens, subLuting) {
     let cnt = 0;
     let i = 0;
     for (; i <= tokens.length - subLutingLength && cnt !== 2; i++) {
-        if (i === 925) {
-            let breakpoint = 3;
-        }
         if (equalTokens(subLuting, tokens.slice(i, i + subLutingLength))) {
             cnt++;
         }
@@ -601,40 +599,4 @@ async function getLuteFileName(finalizedLuting) {
         throw new Error(`Failed to get lute filename`);
     }
 }
-// Function to make a POST request to download the lute file
-// Function to make a POST request to download the lute file
-async function downloadLuteFilePrime(finalizedLuting) {
-    try {
-        // Get the filename from the server
-        const filename = await getLuteFileName(finalizedLuting);
-        // Define function to make a periodic request
-        const makePeriodicRequest = async () => {
-            try {
-                // Make a POST request to get the lute file
-                const getFileUrl = 'https://luteboi.com/v2/get_lute/';
-                const fileResponse = await axios_1.default.post(getFileUrl, { file: filename }, { responseType: 'arraybuffer' });
-                // If response contains data, return the file
-                if (fileResponse.data.byteLength > 0) {
-                    return fileResponse.data;
-                }
-                else {
-                    // If response does not contain data, wait for 1 second and make another request
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
-                    return makePeriodicRequest();
-                }
-            }
-            catch (error) {
-                // If an error occurs, wait for 1 second and make another request
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
-                return makePeriodicRequest();
-            }
-        };
-        // Start the periodic request
-        return makePeriodicRequest();
-    }
-    catch (error) {
-        throw new Error(`Failed to get lute filename`);
-    }
-}
-exports.downloadLuteFilePrime = downloadLuteFilePrime;
 //# sourceMappingURL=helperFunctions.js.map

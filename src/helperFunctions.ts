@@ -41,7 +41,7 @@ export function equalTokens(t1s: lutingToken[], t2s: lutingToken[]): boolean{
     /**
      * Helper function to expand all pre-existing definitions. Used for optimization
      * @param tokens The array of lutingTokens to expand
-	 * @return The array of lutingTokens resulting from expanding all definitions fully.
+	 * @return The String of lutingTokens resulting from expanding all definitions fully.
      */
 export function expandDefinitions(tokens: lutingToken[]): string{
 	let res: string = "";
@@ -479,7 +479,7 @@ function totalLength(tokens: lutingToken[]): number{
 	 * @param subLuting			The subLuting to check for
 	 * @returns 				Array of indices of lutingTokens
      */
-function getLutingIndicesOf(tokens: lutingToken[], subLuting: lutingToken[]){
+export function getLutingIndicesOf(tokens: lutingToken[], subLuting: lutingToken[]){
 	var searchLutingLength = tokens.length;
 	if (searchLutingLength === 0){
 		return [];

@@ -14,7 +14,8 @@ import * as vscode from 'vscode';
     'octave-change',
     'luting-header',
     'comment',
-    'side'
+    'side',
+    'chord'
 */
 
 export class lutingToken{
