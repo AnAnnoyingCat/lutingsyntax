@@ -577,39 +577,3 @@ async function getLuteFileName(finalizedLuting: string) {
         throw new Error(`Failed to get lute filename`);
     }
 }
-
-// Function to make a POST request to download the lute file
-// Function to make a POST request to download the lute file
-export async function downloadLuteFilePrime(finalizedLuting: string) {
-    try {
-        // Get the filename from the server
-        const filename = await getLuteFileName(finalizedLuting);
-
-		// Define function to make a periodic request
-		const makePeriodicRequest = async (): Promise<ArrayBuffer> => {
-			try {
-				// Make a POST request to get the lute file
-				const getFileUrl = 'https://luteboi.com/v2/get_lute/';
-				const fileResponse = await axios.post(getFileUrl, { file: filename }, { responseType: 'arraybuffer' });
-
-				// If response contains data, return the file
-				if (fileResponse.data.byteLength > 0) {
-					return fileResponse.data;
-				} else {
-					// If response does not contain data, wait for 1 second and make another request
-					await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
-					return makePeriodicRequest();
-				}
-			} catch (error) {
-				// If an error occurs, wait for 1 second and make another request
-				await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
-				return makePeriodicRequest();
-			}
-		};
-
-        // Start the periodic request
-        return makePeriodicRequest();
-    } catch (error) {
-        throw new Error(`Failed to get lute filename`);
-    }
-}
