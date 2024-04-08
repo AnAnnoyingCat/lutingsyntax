@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import axios from 'axios';
+import axios, { toFormData } from 'axios';
 import * as querystring from 'querystring';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -355,6 +355,8 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 	removeComments(tokens);
 	if (!quick){
 		tokens = provideLutingTokensFromString(expandDefinitions(tokens));
+	} else {
+		checkExistingDefs(tokens, globalDefsToUse, localDefsToUse);
 	}
 
 	for (let i = 0; i < maxItr; i++){
@@ -418,6 +420,16 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 	}
 	const resultingLuting = tokensToString(tokens);
 	return resultingLuting;
+}
+
+	/**
+	 * Helper function to check for any already present definition letters and remove them
+	 * @param tokens 			The set of tokens to check
+	 * @param globalDefsToUse 	Array of the global definitions
+	 * @param localDefsToUse 	Array of the arrays of local definitions
+	 */
+function checkExistingDefs(tokens: lutingToken[], globalDefsToUse: string[], localDefsToUse: string[][]){
+	// TODO: implement
 }
 
 export function makeOptimalMultilute(tokens: lutingToken[], maxItr: number, optimization: string): string{
