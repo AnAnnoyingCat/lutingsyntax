@@ -420,6 +420,64 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 	return resultingLuting;
 }
 
+export function makeOptimalMultilute(tokens: lutingToken[], maxItr: number, safe: boolean, quick: boolean): string{
+	let optimalLuting = optimize(tokens, maxItr, safe, quick);
+	//let optimalLuting = tokensToString(tokens);
+	let multilutings: string[] = [];
+	if (optimalLuting.length < 493){
+		//No multilute Needed!
+		return optimalLuting;
+	}
+	//First multilute is different
+	let i = 0;
+	let curr_multilute = optimalLuting.substring(i, 491);
+	curr_multilute = curr_multilute.slice(0, 5).concat(" m", curr_multilute.slice(5));
+	multilutings.push(curr_multilute);
+	i = 491;
+	while (i < optimalLuting.length){
+		curr_multilute = optimalLuting.substring(i, i+485);
+		if (i < optimalLuting.length - 485){
+			curr_multilute = "#lute m ".concat(curr_multilute);
+		} else {
+			//Final multilute
+			curr_multilute = "#lute ".concat(curr_multilute);
+		}
+		multilutings.push(curr_multilute);
+		i += 485;
+	}
+
+	let res = "";
+	for (let j = 0; j < multilutings.length; j++){
+		res = res.concat("\n//Multilute " + (j+1) + ":" + "\n" + multilutings[j]);
+	}
+	return res;
+}
+
+/**
+ * Helper function to split a multiluting into "traditional" lutings.
+ * @param tokens Tokens to be split
+ * @returns Array of lutingToken[]
+ */
+
+function splitMultilutesToLutes(tokens: lutingToken[]):lutingToken[][]{
+	let splitUpLutings: lutingToken[][] = [];
+	//Find positions of newVoice
+	let newVoicePositions: number[] = [];
+	for (let i = 0; i < tokens.length; i++){
+		if (tokens[i].type === 'luting-header'){
+			newVoicePositions.push(i);
+		}
+	}
+	//All but the last subluting
+	for (let i = 0; i < newVoicePositions.length - 1; i++){
+		splitUpLutings.push(tokens.slice(newVoicePositions[i], newVoicePositions[i + 1]));
+	}
+	//The last subluting
+	splitUpLutings.push(tokens.slice(newVoicePositions[newVoicePositions.length - 1]));
+
+	return splitUpLutings;
+}
+
     /**
      * Helper function to find out whether a definition is contained within just one voice, and if so in which, and whether it's a safe or unsafe definition.
      * @param tokens 			The array of lutingTokens to check over

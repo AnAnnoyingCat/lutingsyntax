@@ -69,6 +69,10 @@
       {
         "command": "lutingsyntax.timedOptimization",
         "title": "Luting: Perform timing optimization"
+      },
+      {
+        "command": "lutingsyntax.testCommand",
+        "title": "Luting: Execute test"
       }
     ]
   },

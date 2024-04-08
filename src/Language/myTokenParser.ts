@@ -132,9 +132,9 @@ export function provideLutingTokensFromString(inputText: string): lutingToken[] 
                     lutingTokens.push(new lutingToken(char, "octave-change"));
                     lineIndex++;
                 }
-            } else if (char === '#' && line.substring(lineIndex).match(/^#lute \d+/)) {
+            } else if (char === '#' && line.substring(lineIndex).match(/^#lute ?m? ?[0-9]*/)) {
                 // Match luting-header
-                const match = line.substring(lineIndex).match(/^#lute \d+/);
+                const match = line.substring(lineIndex).match(/^#lute ?m? ?[0-9]*/);
                 if (match) {
                     lutingTokens.push(new lutingToken(match[0].concat(" "), "luting-header"));
                     lineIndex += match[0].length;

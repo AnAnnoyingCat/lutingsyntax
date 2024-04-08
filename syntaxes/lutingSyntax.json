@@ -67,14 +67,7 @@
 	  },
 	  {
 		"name": "chord",
-		"begin": "\\(",
-		"end": "\\)",
-		"patterns": [
-			{
-				"name": "chordnote",
-				"match": "[^)]"
-			}
-		]
+		"match": "\\(|\\)"
 	  },
 	  {
 		"name": "comment",
