@@ -109,6 +109,9 @@ function provideLutingTokensFromString(inputText) {
                         lineIndex += fullString.length;
                     }
                 }
+                else {
+                    throw new TypeError("Unfinished chord in line " + i + ", char nr. " + (lineIndex + 1) + ". ");
+                }
             }
             else if (char === '}') {
                 // Match end-definition

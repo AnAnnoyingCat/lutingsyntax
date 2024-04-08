@@ -212,10 +212,9 @@ export function activate(context: vscode.ExtensionContext) {
     */
     const testCommand = 'lutingsyntax.testCommand';
     const testCommandHandler = async () => {
-        const optimizationType = await vscode.window.showQuickPick(['safe', 'unsafe', 'quick', 'none'], { placeHolder: 'Which type of optimization to use?' });
         // Get the active text editor
         const editor = vscode.window.activeTextEditor;
-        if (editor && optimizationType) {
+        if (editor) {
             // Get the current tokens of the active document
             const documentUri = editor.document.uri;
             if (path.extname(documentUri.fsPath) !== '.lute') {
@@ -226,9 +225,8 @@ export function activate(context: vscode.ExtensionContext) {
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
-            let res = helper.makeOptimalMultilute(myTokens, 50, optimizationType);
 
-            
+            /*
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);
                 const end = lastLine.range.end;
@@ -240,7 +238,7 @@ export function activate(context: vscode.ExtensionContext) {
                 } else {
                     vscode.window.showErrorMessage("Failed to writeback optimized luting...");
                 }
-            });
+            });*/
 
         } else {
             vscode.window.showErrorMessage('No active text editor found.');

@@ -105,6 +105,8 @@ export function provideLutingTokensFromString(inputText: string): lutingToken[] 
                         lutingTokens.push(new lutingToken(fullString, "chord"));
                         lineIndex += fullString.length;
                     }
+                } else {
+                    throw new TypeError("Unfinished chord in line " + i + ", char nr. " + (lineIndex + 1) + ". ");
                 }
             } else if (char === '}') {
                 // Match end-definition

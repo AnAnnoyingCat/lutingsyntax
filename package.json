@@ -59,8 +59,8 @@
         "title": "Luting: Optimize your luting"
       },
       {
-        "command": "lutingsyntax.testCommand",
-        "title": "Luting: Execute test"
+        "command": "lutingsyntax.multilute",
+        "title": "Luting: Turn current luting into a multilute"
       }
     ]
   },
