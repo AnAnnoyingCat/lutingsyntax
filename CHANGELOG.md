@@ -18,7 +18,7 @@ All notable changes to the "Luting in VS Code" extension will be documented in t
 - Fixed: Now correctly supports s[1-9]? notation for stereo sound.
 - Fixed: No longer runs indefinitely on wrongly formatted Lutings.
 
-## Release 1.1
+## Release 2.0
 
 - New Command "Luting: Turn current luting into multilute" to generate multilutings from lutings.
 - Legacy Commands Safe, Unsafe and Quick optimization combined into one "Optimize" command.
