@@ -192,7 +192,7 @@ export function activate(context: vscode.ExtensionContext) {
            editor.edit(editBuilder => {
                const lastLine = document.lineAt(document.lineCount - 1);
                const end = lastLine.range.end;
-               editBuilder.insert(end, '\n' + "//test result: " + res + '\n');
+               editBuilder.insert(end, '\n' + "//Your Multilutes Sir: " + res + '\n');
 
            }).then(success => {
                if (success) {
