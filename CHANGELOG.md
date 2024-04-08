@@ -4,23 +4,22 @@ All notable changes to the "Luting in VS Code" extension will be documented in t
 
 ## Released 1.0
 
-### Features
-
 - Custom .lute extension for Luting files
 - Custom Theme to enable Luting-specific syntax-highlighting in .lute files
 - Comments supported by the .lute extension
 - Commands to optimize your Luting
 - A Command to quickly copy a cheerable version of your Luting into your clipboard
 
-## Patches 1.01-1.05
+## Patches 1.0.1-1.0.5
 
-### Features
-
-- Command "Luting: Download your luting" which directly downloads current .lute file
-
-### Fixes
-
+- New Command "Luting: Download your luting" which directly downloads current .lute file
 - Fixed: Comments always going until end of line
 - Fixed: Luting commands freezing VS Code when called on non-lute-files.
 - Fixed: Now correctly supports s[1-9]? notation for stereo sound.
 - Fixed: No longer runs indefinitely on wrongly formatted Lutings.
+
+## Release 1.1
+
+- New Command "Luting: Turn current luting into multilute" to generate multilutings from lutings.
+- Legacy Commands Safe, Unsafe and Quick optimization combined into one "Optimize" command.
+- Various small fixes
