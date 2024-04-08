@@ -63,7 +63,7 @@
 	  },
 	  {
 		"name": "lutingheader",
-		"match": "#lute \\d+"
+		"match": "#lute ?m? ?[0-9]*"
 	  },
 	  {
 		"name": "chord",
