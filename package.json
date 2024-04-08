@@ -44,31 +44,19 @@
     "commands": [
       {
         "command": "lutingsyntax.finalize",
-        "title": "Luting: Finalize Luting to clipboard"
-      },
-      {
-        "command": "lutingsyntax.safeoptimize",
-        "title": "Luting: Safely optimize"
+        "title": "Luting: Copy Luting to clipboard"
       },
       {
         "command": "lutingsyntax.download",
         "title": "Luting: Download your Luting"
       },
       {
-        "command": "lutingsyntax.unsafeoptimize",
-        "title": "Luting: Unsafely optimize"
-      },
-      {
-        "command": "lutingsyntax.quickoptimize",
-        "title": "Luting: Perform quick optimization"
-      },
-      {
         "command": "lutingsyntax.cheer",
         "title": "Luting: Generate Cheerable string"
       },
       {
-        "command": "lutingsyntax.timedOptimization",
-        "title": "Luting: Perform timing optimization"
+        "command": "lutingsyntax.optimize",
+        "title": "Luting: Optimize your luting"
       },
       {
         "command": "lutingsyntax.testCommand",

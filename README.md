@@ -36,16 +36,16 @@ Comments will be removed upon generating the final string to cheer in chat.
 
 ### Optimization
 
-Luting in VS Code supports three commands for optimizing your Lutings:
+The optimize command supports three different modes:
 
 | Type | Effect |
 | ------ | ------ |
-| Safe | Will always generate a syntactically correct Luting. May generate worse result than unsafe.|
-| Unsafe | Provides no guarantees to syntactical correctness. Only works most of the time, but possibly better result.|
-|Quick| Does not expand any already existing definitions first to check all possibilities. Is not safe.|
+| Safe | Will always generate a syntactically correct Luting. May generate slightly worse result than unsafe. |
+| Unsafe | Provides no guarantees to syntactical correctness. Only works most of the time, but possibly better result. |
+| Quick | Does not expand any already existing definitions first to check all possibilities. |
 
 As these commands brute-force check every substring multiple times,
-expect them to take up to around 15 seconds for very large lutings. Quick should be substantially faster.
+expect them to take up to around 15 seconds for very large lutings. Quick should, however, be substantially faster.
 
 ### Generation
 
@@ -56,8 +56,8 @@ The command "Download your Luting" will create a folder called "Luting-Out" and 
 Luting in VS Code supports two commands for cheering Lutings:
 | Type | Effect |
 | ------ | ------ |
-| Finalize Luting | Adds the current Luting with all newLines and comments removed to clipboard.|
-| Generate cheerable String | Adds the Luting message already including "Cheer1" to clipboard.|
+| Copy to clipboard | Adds the current Luting with all newLines and comments removed to clipboard. |
+| Generate cheerable String | Adds the Luting message already including "Cheer1" to clipboard, ready to be cheered! |
 
 ## Installation
 

@@ -68,129 +68,61 @@ export function activate(context: vscode.ExtensionContext) {
         }
     };
 
-
     /**
-    * Safely Optimize the current Luting. Guarantees correctness of final result.
-    * Possibly worse result than unsafe due to better guarantees.
+    * Optimize current luting. Provides the options of 'safe', 'unsafe' and 'quick'.
     */
-    const safeOptimizeCommand = 'lutingsyntax.safeoptimize';
-    const safeOptimizeCommandHandler = async () => {
-        // Get the active text editor
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            // Get the current tokens of the active document
-            const documentUri = editor.document.uri;
-            if (path.extname(documentUri.fsPath) !== '.lute') {
-                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
-                return;
-            }
-            const document = await vscode.workspace.openTextDocument(documentUri);
-            const text = document.getText();
-            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
-
-            const optimizedResult = helper.optimize(myTokens, 50, true, false);
-
-            
-            //write back into the document
-            editor.edit(editBuilder => {
-                const lastLine = document.lineAt(document.lineCount - 1);
-                const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + "//Safely optimized Luting: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
-
-            }).then(success => {
-                if (success) {
-                    vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
-                } else {
-                    vscode.window.showErrorMessage("Failed to writeback optimized luting...");
+        const optimizeCommand = 'lutingsyntax.optimize';
+        const optimizeCommandHandler = async () => {
+            const optimizationType = await vscode.window.showQuickPick(['safe', 'unsafe', 'quick'], { placeHolder: 'Which type of optimization to use?' });
+            // Get the active text editor
+            const editor = vscode.window.activeTextEditor;
+            if (editor && optimizationType) {
+                // Get the current tokens of the active document
+                const documentUri = editor.document.uri;
+                if (path.extname(documentUri.fsPath) !== '.lute') {
+                    vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                    return;
                 }
-            });
+                const document = await vscode.workspace.openTextDocument(documentUri);
+                const text = document.getText();
+                let myTokens: lutingToken[] = provideLutingTokensFromString(text);
+                
+                let optimizedResult = helper.tokensToString(myTokens);
 
-        } else {
-            vscode.window.showErrorMessage('No active text editor found.');
-        }
-    };
-
-    /**
-    * Unsafely optimize current Luting. Result may not be correct, but most likely will be. 
-    * Possibly better results than safe optimization due to less guarantees.
-    */
-    const unsafeOptimizeCommand = 'lutingsyntax.unsafeoptimize';
-    const unsafeOptimizeCommandHandler = async () => {
-        // Get the active text editor
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            // Get the current tokens of the active document
-            const documentUri = editor.document.uri;
-            if (path.extname(documentUri.fsPath) !== '.lute') {
-                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
-                return;
-            }
-            const document = await vscode.workspace.openTextDocument(documentUri);
-            const text = document.getText();
-            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
-
-            const optimizedResult = helper.optimize(myTokens, 50, false, false);
-
-            
-            //write back into the document
-            editor.edit(editBuilder => {
-                const lastLine = document.lineAt(document.lineCount - 1);
-                const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + "//Un(!)-safely optimized luting; make sure it compiles first: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
-
-            }).then(success => {
-                if (success) {
-                    vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
-                } else {
-                    vscode.window.showErrorMessage("Failed to writeback optimized luting...");
+                if (optimizationType === 'safe'){
+                    optimizedResult = helper.optimize(myTokens, 50, true, false);
+                } else if (optimizationType === 'unsafe'){
+                    optimizedResult = helper.optimize(myTokens, 50, false, false);
+                } else if (optimizationType === 'quick'){
+                    optimizedResult = helper.optimize(myTokens, 50, false, true);
                 }
-            });
-
-        } else {
-            vscode.window.showErrorMessage('No active text editor found.');
-        }
-    };
-
-    /**
-    * Optimize current luting without expanding definitions first.
-    * Is not safe.
-    */
-    const quickOptimizeCommand = 'lutingsyntax.quickoptimize';
-    const quickOptimizeCommandHandler = async () => {
-        // Get the active text editor
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            // Get the current tokens of the active document
-            const documentUri = editor.document.uri;
-            if (path.extname(documentUri.fsPath) !== '.lute') {
-                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
-                return;
+                
+                //write back into the document
+                editor.edit(editBuilder => {
+                    const lastLine = document.lineAt(document.lineCount - 1);
+                    const end = lastLine.range.end;
+                    if (optimizationType === 'safe'){
+                        editBuilder.insert(end, '\n' + "//Safely optimized Luting: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
+                    } else if (optimizationType === 'unsafe'){
+                        editBuilder.insert(end, '\n' + "//Un(!)-safely optimized luting; make sure it compiles first: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
+                    } else if (optimizationType === 'quick'){
+                        editBuilder.insert(end, '\n' + "//Quickly optimized lutiing: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
+                    } else {
+                        vscode.window.showErrorMessage("This shouldn't happen. Tell @AnAnnoyingCat about this");
+                    }
+    
+                }).then(success => {
+                    if (success) {
+                        vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
+                    } else {
+                        vscode.window.showErrorMessage("Failed to writeback optimized luting...");
+                    }
+                });
+    
+            } else {
+                vscode.window.showErrorMessage('No active text editor found.');
             }
-            const document = await vscode.workspace.openTextDocument(documentUri);
-            const text = document.getText();
-            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
-
-            const optimizedResult = helper.optimize(myTokens, 50, false, true);
-
-            
-            //write back into the document
-            editor.edit(editBuilder => {
-                const lastLine = document.lineAt(document.lineCount - 1);
-                const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + "//Quickly optimized lutiing: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
-
-            }).then(success => {
-                if (success) {
-                    vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
-                } else {
-                    vscode.window.showErrorMessage("Failed to writeback optimized luting...");
-                }
-            });
-
-        } else {
-            vscode.window.showErrorMessage('No active text editor found.');
-        }
-    };
+        };
     
     /**
     * Command to download current .lute file into Lute-Out folder.
@@ -235,9 +167,88 @@ export function activate(context: vscode.ExtensionContext) {
         }
     };
 
+   /**
+    * Test command used for developing the extension.
+    */
+   const multiLuteCommand = 'lutingsyntax.multilute';
+   const multiLuteCommandHandler = async () => {
+       const optimizationType = await vscode.window.showQuickPick(['safe', 'unsafe', 'quick', 'none'], { placeHolder: 'Which type of optimization to use?' });
+       // Get the active text editor
+       const editor = vscode.window.activeTextEditor;
+       if (editor && optimizationType) {
+           // Get the current tokens of the active document
+           const documentUri = editor.document.uri;
+           if (path.extname(documentUri.fsPath) !== '.lute') {
+               vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+               return;
+           }
+           const document = await vscode.workspace.openTextDocument(documentUri);
+           const text = document.getText();
+           let myTokens: lutingToken[] = provideLutingTokensFromString(text);
+
+           let res = helper.makeOptimalMultilute(myTokens, 50, optimizationType);
+
+           
+           editor.edit(editBuilder => {
+               const lastLine = document.lineAt(document.lineCount - 1);
+               const end = lastLine.range.end;
+               editBuilder.insert(end, '\n' + "//test result: " + res + '\n');
+
+           }).then(success => {
+               if (success) {
+                   //vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
+               } else {
+                   vscode.window.showErrorMessage("Failed to writeback optimized luting...");
+               }
+           });
+
+       } else {
+           vscode.window.showErrorMessage('No active text editor found.');
+       }
+   };
 
     /**
-    * Optimized timing compression.
+    * Test command used for developing the extension.
+    */
+    const testCommand = 'lutingsyntax.testCommand';
+    const testCommandHandler = async () => {
+        const optimizationType = await vscode.window.showQuickPick(['safe', 'unsafe', 'quick', 'none'], { placeHolder: 'Which type of optimization to use?' });
+        // Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+        if (editor && optimizationType) {
+            // Get the current tokens of the active document
+            const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
+
+            let res = helper.makeOptimalMultilute(myTokens, 50, optimizationType);
+
+            
+            editor.edit(editBuilder => {
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const end = lastLine.range.end;
+                editBuilder.insert(end, '\n' + "//test result: " + res + '\n');
+
+            }).then(success => {
+                if (success) {
+                    //vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
+                } else {
+                    vscode.window.showErrorMessage("Failed to writeback optimized luting...");
+                }
+            });
+
+        } else {
+            vscode.window.showErrorMessage('No active text editor found.');
+        }
+    };
+
+    /**
+    * Legacy command: Optimized timing compression.
     */
     const timedOptimizationCommand = 'lutingsyntax.timedOptimization';
     const timedOptimizationCommandHandler = async () => {
@@ -279,10 +290,11 @@ export function activate(context: vscode.ExtensionContext) {
     };
 
     /**
-    * Test command used for developing the extension.
+    * Legacy command: Optimize current luting without expanding definitions first.
+    * Is not safe.
     */
-    const testCommand = 'lutingsyntax.testCommand';
-    const testCommandHandler = async () => {
+    const quickOptimizeCommand = 'lutingsyntax.quickoptimize';
+    const quickOptimizeCommandHandler = async () => {
         // Get the active text editor
         const editor = vscode.window.activeTextEditor;
         if (editor) {
@@ -296,17 +308,18 @@ export function activate(context: vscode.ExtensionContext) {
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
-            let res = helper.makeOptimalMultilute(myTokens, 50, false, false);
+            const optimizedResult = helper.optimize(myTokens, 50, false, true);
 
             
+            //write back into the document
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);
                 const end = lastLine.range.end;
-                editBuilder.insert(end, '\n' + "//test result: " + res + '\n');
+                editBuilder.insert(end, '\n' + "//Quickly optimized lutiing: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
 
             }).then(success => {
                 if (success) {
-                    //vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
+                    vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
                 } else {
                     vscode.window.showErrorMessage("Failed to writeback optimized luting...");
                 }
@@ -317,16 +330,93 @@ export function activate(context: vscode.ExtensionContext) {
         }
     };
 
+    /**
+    * Legacy command: Safely Optimize the current Luting. Guarantees correctness of final result.
+    * Possibly worse result than unsafe due to better guarantees.
+    */
+    const safeOptimizeCommand = 'lutingsyntax.safeoptimize';
+    const safeOptimizeCommandHandler = async () => {
+        // Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            // Get the current tokens of the active document
+            const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
+            const optimizedResult = helper.optimize(myTokens, 50, true, false);
 
-    
+            
+            //write back into the document
+            editor.edit(editBuilder => {
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const end = lastLine.range.end;
+                editBuilder.insert(end, '\n' + "//Safely optimized Luting: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
+
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
+                } else {
+                    vscode.window.showErrorMessage("Failed to writeback optimized luting...");
+                }
+            });
+
+        } else {
+            vscode.window.showErrorMessage('No active text editor found.');
+        }
+    };
+
+    /**
+    * Legacy command: Unsafely optimize current Luting. Result may not be correct, but most likely will be. 
+    * Possibly better results than safe optimization due to less guarantees.
+    */
+    const unsafeOptimizeCommand = 'lutingsyntax.unsafeoptimize';
+    const unsafeOptimizeCommandHandler = async () => {
+        // Get the active text editor
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            // Get the current tokens of the active document
+            const documentUri = editor.document.uri;
+            if (path.extname(documentUri.fsPath) !== '.lute') {
+                vscode.window.showErrorMessage('This command can only be run on a .lute file.');
+                return;
+            }
+            const document = await vscode.workspace.openTextDocument(documentUri);
+            const text = document.getText();
+            let myTokens: lutingToken[] = provideLutingTokensFromString(text);
+
+            const optimizedResult = helper.optimize(myTokens, 50, false, false);
+
+            
+            //write back into the document
+            editor.edit(editBuilder => {
+                const lastLine = document.lineAt(document.lineCount - 1);
+                const end = lastLine.range.end;
+                editBuilder.insert(end, '\n' + "//Un(!)-safely optimized luting; make sure it compiles first: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
+
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage("Here's your luting! Hope it sounds good hryAdmire");
+                } else {
+                    vscode.window.showErrorMessage("Failed to writeback optimized luting...");
+                }
+            });
+
+        } else {
+            vscode.window.showErrorMessage('No active text editor found.');
+        }
+    };
+
     // Add the commands to the context subscriptions
     context.subscriptions.push(vscode.commands.registerCommand(finalizeLuting, finalizeLutingCommandHandler));
-    context.subscriptions.push(vscode.commands.registerCommand(safeOptimizeCommand, safeOptimizeCommandHandler));
-    context.subscriptions.push(vscode.commands.registerCommand(unsafeOptimizeCommand, unsafeOptimizeCommandHandler));
-    context.subscriptions.push(vscode.commands.registerCommand(quickOptimizeCommand, quickOptimizeCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(optimizeCommand, optimizeCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(cheerableLuting, cheerableLutingCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(downloadCommand, downloadCommandHandler));
-    context.subscriptions.push(vscode.commands.registerCommand(timedOptimizationCommand, timedOptimizationCommandHandler));
-    context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(multiLuteCommand, multiLuteCommandHandler));
+    //context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
 }

@@ -420,9 +420,22 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 	return resultingLuting;
 }
 
-export function makeOptimalMultilute(tokens: lutingToken[], maxItr: number, safe: boolean, quick: boolean): string{
-	let optimalLuting = optimize(tokens, maxItr, safe, quick);
-	//let optimalLuting = tokensToString(tokens);
+export function makeOptimalMultilute(tokens: lutingToken[], maxItr: number, optimization: string): string{
+	let optimalLuting;
+	if (optimization === 'quick'){
+		console.log("Doing quick optimization");
+		optimalLuting = optimize(tokens, maxItr, false, true);
+	} else if (optimization === 'safe'){
+		console.log("Doing safe optimization");
+		optimalLuting = optimize(tokens, maxItr, true, false);
+	} else if (optimization === 'unsafe'){
+		console.log("Doing unsafe optimization");
+		optimalLuting = optimize(tokens, maxItr, false, false);
+	} else {
+		console.log("Doing no optimization");
+		removeComments(tokens);
+		optimalLuting = tokensToString(tokens);
+	}
 	let multilutings: string[] = [];
 	if (optimalLuting.length < 493){
 		//No multilute Needed!
@@ -487,7 +500,9 @@ function splitMultilutesToLutes(tokens: lutingToken[]):lutingToken[][]{
 	 * @returns 				-2 if "safe" is set to true and the def is unsafe , -1 if the definition is global and a positive number representing the voice where the def is present otherwise.
      */
 function isLocalDef(tokens: lutingToken[], subLuting: lutingToken[], currentLocalChar: string, safe: boolean){
-
+	if (!areBracketsLegal(subLuting)){
+		return -2;
+	}
 	let substrPositions  = getLutingIndicesOf(tokens, subLuting);
 	let newVoicePositions = getLutingIndicesOf(tokens, [new lutingToken("|", "new-voice")]);
 	newVoicePositions.unshift(0);
@@ -516,6 +531,26 @@ function isLocalDef(tokens: lutingToken[], subLuting: lutingToken[], currentLoca
 		}
 	}
 	return localPos;
+}
+
+/**
+ * Helper function to check whether a given definition contains premature closing bracket
+ * @param tokens to be defined
+ * @returns true or false
+ */
+function areBracketsLegal(tokens: lutingToken[]): boolean{
+	let bracketCnt = 0;
+	for (let i = 0; i < tokens.length; i++){
+		if (tokens[i].type === 'start-definition'){
+			bracketCnt++;
+		} else if (tokens[i].type === 'end-definition'){
+			bracketCnt--;
+		}
+		if (bracketCnt < 0){
+			return false;
+		}
+	}
+	return true;
 }
 
     /**

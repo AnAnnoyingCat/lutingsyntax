@@ -448,9 +448,25 @@ function optimize(tokens, maxItr, safe, quick) {
     return resultingLuting;
 }
 exports.optimize = optimize;
-function makeOptimalMultilute(tokens, maxItr, safe, quick) {
-    let optimalLuting = optimize(tokens, maxItr, safe, quick);
-    //let optimalLuting = tokensToString(tokens);
+function makeOptimalMultilute(tokens, maxItr, optimization) {
+    let optimalLuting;
+    if (optimization === 'quick') {
+        console.log("Doing quick optimization");
+        optimalLuting = optimize(tokens, maxItr, false, true);
+    }
+    else if (optimization === 'safe') {
+        console.log("Doing safe optimization");
+        optimalLuting = optimize(tokens, maxItr, true, false);
+    }
+    else if (optimization === 'unsafe') {
+        console.log("Doing unsafe optimization");
+        optimalLuting = optimize(tokens, maxItr, false, false);
+    }
+    else {
+        console.log("Doing no optimization");
+        removeComments(tokens);
+        optimalLuting = tokensToString(tokens);
+    }
     let multilutings = [];
     if (optimalLuting.length < 493) {
         //No multilute Needed!
@@ -512,6 +528,9 @@ function splitMultilutesToLutes(tokens) {
  * @returns 				-2 if "safe" is set to true and the def is unsafe , -1 if the definition is global and a positive number representing the voice where the def is present otherwise.
  */
 function isLocalDef(tokens, subLuting, currentLocalChar, safe) {
+    if (!areBracketsLegal(subLuting)) {
+        return -2;
+    }
     let substrPositions = getLutingIndicesOf(tokens, subLuting);
     let newVoicePositions = getLutingIndicesOf(tokens, [new myTokenParser_1.lutingToken("|", "new-voice")]);
     newVoicePositions.unshift(0);
@@ -540,6 +559,26 @@ function isLocalDef(tokens, subLuting, currentLocalChar, safe) {
         }
     }
     return localPos;
+}
+/**
+ * Helper function to check whether a given definition contains premature closing bracket
+ * @param tokens to be defined
+ * @returns true or false
+ */
+function areBracketsLegal(tokens) {
+    let bracketCnt = 0;
+    for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i].type === 'start-definition') {
+            bracketCnt++;
+        }
+        else if (tokens[i].type === 'end-definition') {
+            bracketCnt--;
+        }
+        if (bracketCnt < 0) {
+            return false;
+        }
+    }
+    return true;
 }
 /**
  * Helper function to find out whether a definition is contained within just one voice, and if so in which, and whether it's a safe or unsafe definition.
