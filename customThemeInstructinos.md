@@ -90,19 +90,20 @@ If you wish to further modify the specific colors, here is a list of all the tok
 ```sh
 All the possible types of tokens:
     'instrument'
-    'octave'
-    'volume'
+    'octave',
+    'volume',
     'time',
-    'fraction'
-    'note'
-    'start-definition'
-    'end-definition'
-    'predefined-section'
-    'new-voice'
-    'octave-change'
-    'luting-header'
-    'comment'
-    'side'
+    'fraction',
+    'note',
+    'start-definition',
+    'end-definition',
+    'predefined-section',
+    'new-voice',
+    'octave-change',
+    'luting-header',
+    'comment',
+    'side',
+    'chord'
 ```
 
 #### Created by [@AnAnnoyingCat](https://pages.github.com/)
