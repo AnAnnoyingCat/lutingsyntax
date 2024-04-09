@@ -23,3 +23,8 @@ All notable changes to the "Luting in VS Code" extension will be documented in t
 - New Command "Luting: Turn current luting into multilute" to generate multilutings from lutings.
 - Legacy Commands Safe, Unsafe and Quick optimization combined into one "Optimize" command.
 - Various small fixes
+
+### Patches 2.0.1-2.0.2
+
+- Fixed: Various spelling issues
+- Fixed: Quick optimization now actually works, and is still quick.
