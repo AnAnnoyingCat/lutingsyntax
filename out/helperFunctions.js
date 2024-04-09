@@ -387,9 +387,15 @@ function optimize(tokens, maxItr, safe, quick) {
     let hightestLocalDef = "A";
     //used for tracking legality of best transformation
     let bestOffset = 0;
+    //Setting up with quick optimization
     removeComments(tokens);
     if (!quick) {
         tokens = (0, myTokenParser_1.provideLutingTokensFromString)(expandDefinitions(tokens));
+    }
+    else {
+        checkExistingDefs(tokens, globalDefsToUse, localDefsToUse);
+        lowestGlobalDef = globalDefsToUse[0];
+        hightestLocalDef = localDefsToUse[0][0];
     }
     for (let i = 0; i < maxItr; i++) {
         //Finding the substrings with the best gain
@@ -448,6 +454,23 @@ function optimize(tokens, maxItr, safe, quick) {
     return resultingLuting;
 }
 exports.optimize = optimize;
+/**
+ * Helper function to check for any already present definition letters and remove them globally
+ * @param tokens 			The set of tokens to check
+ * @param globalDefsToUse 	Array of the global definitions
+ * @param localDefsToUse 	Array of the arrays of local definitions
+ */
+function checkExistingDefs(tokens, globalDefsToUse, localDefsToUse) {
+    for (let i = 0; i < tokens.length; i++) {
+        if (tokens[i].type === 'start-definition') {
+            let defName = tokens[i].content.match(/[A-Z]/)[0];
+            globalDefsToUse.splice(globalDefsToUse.indexOf(defName), 1);
+            for (let local of localDefsToUse) {
+                local.splice(local.indexOf(defName), 1);
+            }
+        }
+    }
+}
 function makeOptimalMultilute(tokens, maxItr, optimization) {
     let optimalLuting;
     if (optimization === 'quick') {
