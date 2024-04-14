@@ -168,7 +168,7 @@ export function activate(context: vscode.ExtensionContext) {
     */
    const multiLuteCommand = 'lutingsyntax.multilute';
    const multiLuteCommandHandler = async () => {
-       const optimizationType = await vscode.window.showQuickPick(['safe', 'unsafe', 'quick', 'none'], { placeHolder: 'Which type of optimization to use?' });
+       const optimizationType = await vscode.window.showQuickPick(['thorough', 'quick', 'none'], { placeHolder: 'Which type of optimization to use?' });
        // Get the active text editor
        const editor = vscode.window.activeTextEditor;
        if (editor && optimizationType) {

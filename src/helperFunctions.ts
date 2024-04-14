@@ -467,13 +467,10 @@ export function makeOptimalMultilute(tokens: lutingToken[], maxItr: number, opti
 	let optimalLuting;
 	if (optimization === 'quick'){
 		console.log("Doing quick optimization");
-		optimalLuting = optimize(tokens, maxItr, false, true);
-	} else if (optimization === 'safe'){
-		console.log("Doing safe optimization");
+		optimalLuting = optimize(tokens, maxItr, true, true);
+	} else if (optimization === 'thorough'){
+		console.log("Doing thorough optimization");
 		optimalLuting = optimize(tokens, maxItr, true, false);
-	} else if (optimization === 'unsafe'){
-		console.log("Doing unsafe optimization");
-		optimalLuting = optimize(tokens, maxItr, false, false);
 	} else {
 		console.log("Doing no optimization");
 		removeComments(tokens);
