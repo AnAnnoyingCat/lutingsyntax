@@ -73,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
     */
         const optimizeCommand = 'lutingsyntax.optimize';
         const optimizeCommandHandler = async () => {
-            const optimizationType = await vscode.window.showQuickPick(['safe', 'unsafe', 'quick'], { placeHolder: 'Which type of optimization to use?' });
+            const optimizationType = await vscode.window.showQuickPick(['thorough', 'quick'], { placeHolder: 'Which type of optimization to use?' });
             // Get the active text editor
             const editor = vscode.window.activeTextEditor;
             if (editor && optimizationType) {
@@ -89,12 +89,10 @@ export function activate(context: vscode.ExtensionContext) {
                 
                 let optimizedResult = helper.tokensToString(myTokens);
 
-                if (optimizationType === 'safe'){
+                if (optimizationType === 'thorough'){
                     optimizedResult = helper.optimize(myTokens, 50, true, false);
-                } else if (optimizationType === 'unsafe'){
-                    optimizedResult = helper.optimize(myTokens, 50, false, false);
                 } else if (optimizationType === 'quick'){
-                    optimizedResult = helper.optimize(myTokens, 50, false, true);
+                    optimizedResult = helper.optimize(myTokens, 50, true, true);
                 }
                 
                 //write back into the document

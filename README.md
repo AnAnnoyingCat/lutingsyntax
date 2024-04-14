@@ -36,16 +36,18 @@ Comments will be removed upon generating the final string to cheer in chat.
 
 ### Optimization
 
-The optimize command supports three different modes:
+The optimization supports two different modes:
 
 | Type | Effect |
 | ------ | ------ |
-| Safe | Will always generate a syntactically correct Luting. May generate slightly worse result than unsafe. |
-| Unsafe | Provides no guarantees to syntactical correctness. Only works most of the time, but possibly better result. |
+| Thorough | Fully expands definitions to start optimizing 'from scratch'. Better than Quick but a ton slower. |
 | Quick | Does not expand any already existing definitions first to check all possibilities. |
 
-As these commands brute-force check every substring multiple times,
-expect them to take up to around 15 seconds for very large lutings. Quick should, however, be substantially faster.
+As 'Thorough' bruteforce checks every possible optimization,
+expect it to take up to around 15-20 seconds for very large lutings. Quick should, however, be substantially faster.  
+If your luting is too long to fit into one message, you can use the command "Turn current luting into a multilute" to optimize it and automatically split it up into
+multiple optimal messages. These lutings are generally very, very big so the command can take up to multiple minutes if you go for thorough optimizaiton. In this case 
+just let it cook and don't touch the file while it's optimizing.
 
 ### Generation
 
