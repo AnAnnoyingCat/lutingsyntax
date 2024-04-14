@@ -400,10 +400,12 @@ function optimize(tokens, maxItr, safe, quick) {
     for (let i = 0; i < maxItr; i++) {
         //Finding the substrings with the best gain
         let sortedSubstrings = calculateUniqueSubstrings(tokens);
-        if (sortedSubstrings[bestOffset].gain <= 0) {
+        if (sortedSubstrings[0].gain <= 0 || hightestLocalDef === lowestGlobalDef) {
             //no more optimizations possible!
             //either no more optimizations present or ran out of definitions.
-            console.log("no point in continuing");
+            if (hightestLocalDef === lowestGlobalDef) {
+                console.log("ran out of defs");
+            }
             break;
         }
         let best = sortedSubstrings[bestOffset].tokenArr;
@@ -418,40 +420,20 @@ function optimize(tokens, maxItr, safe, quick) {
         }
         if (localPosition < 0) {
             //not local
-            if (globalDefsToUse.length === 0 || lowestGlobalDef.charCodeAt(0) - hightestLocalDef.charCodeAt(0) <= 1) {
-                console.log("ran out of global defs specifically");
-                console.log("trying to search for more local defs");
-                bestOffset++;
-                continue;
-            }
             definitionName = globalDefsToUse[0];
-            if (definitionName === 'J') {
-                let x = 2;
-            }
             if (lowestGlobalDef > definitionName) {
                 lowestGlobalDef = definitionName;
             }
             globalDefsToUse.splice(0, 1);
         }
         else {
-            //local
-            if (localDefsToUse[localPosition].length === 0 || lowestGlobalDef.charCodeAt(0) - localDefsToUse[localPosition][0].charCodeAt(0) <= 1) {
-                console.log("ran out of some local defs");
-                break;
-            }
             definitionName = localDefsToUse[localPosition][0];
-            if (definitionName === 'J') {
-                let x = 2;
-            }
             if (hightestLocalDef < definitionName) {
                 hightestLocalDef = definitionName;
             }
             localDefsToUse[localPosition].splice(0, 1);
         }
         let numOccurrences = getLutingIndicesOf(tokens, best).length;
-        if (definitionName === 'J') {
-            let x = 2;
-        }
         let newDefinition = new myTokenParser_1.lutingToken(definitionName.concat('{'), "start-definition");
         let newDefEnd = new myTokenParser_1.lutingToken("}", "end-definition");
         //Base case: the definition
@@ -721,4 +703,17 @@ async function downloadLuteFile(finalizedLuting) {
     }
 }
 exports.downloadLuteFile = downloadLuteFile;
+// Function to make a GET request to get the filename
+async function getLuteFileName(finalizedLuting) {
+    const baseUrl = 'https://luteboi.com/v2/lute/';
+    const queryParams = querystring.stringify({ message: finalizedLuting });
+    const url = `${baseUrl}?${queryParams}`;
+    try {
+        const response = await axios_1.default.get(url);
+        return response.data;
+    }
+    catch (error) {
+        throw new Error(`Failed to get lute filename`);
+    }
+}
 //# sourceMappingURL=helperFunctions.js.map
