@@ -389,6 +389,12 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 		}
 		if (localPosition < 0){
 			//not local
+			if (globalDefsToUse.length === 0){
+				console.log("ran out of global defs specifically");
+				console.log("trying to search for more local defs");
+				bestOffset++;
+				continue;
+			}
 			definitionName = globalDefsToUse[0];
 			if (lowestGlobalDef > definitionName){
 				lowestGlobalDef = definitionName;
@@ -396,6 +402,11 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 			globalDefsToUse.splice(0, 1);
 			
 		} else {
+			//local
+			if (localDefsToUse[localPosition].length === 0){
+				console.log("ran out of local defs specifically");
+				break;
+			}
 			definitionName = localDefsToUse[localPosition][0];
 			if (hightestLocalDef < definitionName){
 				hightestLocalDef = definitionName;
@@ -680,17 +691,3 @@ export async function downloadLuteFile(finalizedLuting: string) {
             throw new Error(`Failed to download the Luting.`);
         }
     }
-
-// Function to make a GET request to get the filename
-async function getLuteFileName(finalizedLuting: string) {
-    const baseUrl = 'https://luteboi.com/v2/lute/';
-    const queryParams = querystring.stringify({ message: finalizedLuting });
-    const url = `${baseUrl}?${queryParams}`;
-
-    try {
-        const response = await axios.get(url);
-        return response.data as string;
-    } catch (error) {
-        throw new Error(`Failed to get lute filename`);
-    }
-}
