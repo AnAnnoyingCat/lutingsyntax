@@ -403,6 +403,9 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand(downloadCommand, downloadCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(multiLuteCommand, multiLuteCommandHandler));
     //context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
+    /**
+     * I THINK IT'S WORKING. BUT I'M NOT SURE. QUICK MIGHT STILL BE BORKED. TEST IF NORMAL ONE WORKS AS IT SHOULD!
+     */
 }
 exports.activate = activate;
 //# sourceMappingURL=extension.js.map
