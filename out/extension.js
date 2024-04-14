@@ -112,11 +112,8 @@ function activate(context) {
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);
                 const end = lastLine.range.end;
-                if (optimizationType === 'safe') {
+                if (optimizationType === 'thorough') {
                     editBuilder.insert(end, '\n' + "//Safely optimized Luting: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
-                }
-                else if (optimizationType === 'unsafe') {
-                    editBuilder.insert(end, '\n' + "//Un(!)-safely optimized luting; make sure it compiles first: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
                 }
                 else if (optimizationType === 'quick') {
                     editBuilder.insert(end, '\n' + "//Quickly optimized lutiing: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
