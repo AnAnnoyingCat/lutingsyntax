@@ -88,7 +88,7 @@ function activate(context) {
     */
     const optimizeCommand = 'lutingsyntax.optimize';
     const optimizeCommandHandler = async () => {
-        const optimizationType = await vscode.window.showQuickPick(['safe', 'unsafe', 'quick'], { placeHolder: 'Which type of optimization to use?' });
+        const optimizationType = await vscode.window.showQuickPick(['thorough', 'quick'], { placeHolder: 'Which type of optimization to use?' });
         // Get the active text editor
         const editor = vscode.window.activeTextEditor;
         if (editor && optimizationType) {
@@ -102,24 +102,18 @@ function activate(context) {
             const text = document.getText();
             let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
             let optimizedResult = helper.tokensToString(myTokens);
-            if (optimizationType === 'safe') {
+            if (optimizationType === 'thorough') {
                 optimizedResult = helper.optimize(myTokens, 50, true, false);
             }
-            else if (optimizationType === 'unsafe') {
-                optimizedResult = helper.optimize(myTokens, 50, false, false);
-            }
             else if (optimizationType === 'quick') {
-                optimizedResult = helper.optimize(myTokens, 50, false, true);
+                optimizedResult = helper.optimize(myTokens, 50, true, true);
             }
             //write back into the document
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);
                 const end = lastLine.range.end;
-                if (optimizationType === 'safe') {
-                    editBuilder.insert(end, '\n' + "//Safely optimized Luting: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
-                }
-                else if (optimizationType === 'unsafe') {
-                    editBuilder.insert(end, '\n' + "//Un(!)-safely optimized luting; make sure it compiles first: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
+                if (optimizationType === 'thorough') {
+                    editBuilder.insert(end, '\n' + "//Thoroughly optimized Luting: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);
                 }
                 else if (optimizationType === 'quick') {
                     editBuilder.insert(end, '\n' + "//Quickly optimized lutiing: " + '\n' + optimizedResult + '\n' + "//Luting length: " + optimizedResult.length);

@@ -367,12 +367,10 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 		//Finding the substrings with the best gain
 		let sortedSubstrings = calculateUniqueSubstrings(tokens);
 
-		if (sortedSubstrings[0].gain <= 0 || hightestLocalDef === lowestGlobalDef){
+		if (sortedSubstrings[bestOffset].gain <= 0){
 			//no more optimizations possible!
 			//either no more optimizations present or ran out of definitions.
-			if (hightestLocalDef === lowestGlobalDef){
-				console.log("ran out of defs");
-			}
+			console.log("nothing more to gain.");
 			break;
 		}
 
@@ -389,16 +387,37 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 		}
 		if (localPosition < 0){
 			//not local
+			
+			if (globalDefsToUse.length <= 0){
+				console.log("ran out of global defs. now looking to find more local optimizations");
+				bestOffset++;
+				continue;
+			}
 			definitionName = globalDefsToUse[0];
 			if (lowestGlobalDef > definitionName){
 				lowestGlobalDef = definitionName;
 			}
+			//remove this global def from all local defs
+			for (let locald of localDefsToUse){
+				const index = locald.indexOf(definitionName);
+				if (index !== -1) {
+					locald.splice(index, 1);
+				}
+			}
 			globalDefsToUse.splice(0, 1);
-			
 		} else {
+			if (localDefsToUse[localPosition].length <= 0){
+				console.log("ran out of local defs on this one. trying to find more defs otherplace now.");
+				bestOffset++;
+				continue;
+			}
 			definitionName = localDefsToUse[localPosition][0];
 			if (hightestLocalDef < definitionName){
 				hightestLocalDef = definitionName;
+			}
+			const index = globalDefsToUse.indexOf(definitionName);
+			if (index !== -1){
+				globalDefsToUse.splice(index, 1);
 			}
 			localDefsToUse[localPosition].splice(0, 1);
 		}
