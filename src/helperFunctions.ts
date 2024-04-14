@@ -367,7 +367,7 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 		//Finding the substrings with the best gain
 		let sortedSubstrings = calculateUniqueSubstrings(tokens);
 
-		if (sortedSubstrings[0].gain <= 0 || hightestLocalDef === lowestGlobalDef){
+		if (sortedSubstrings[bestOffset].gain <= 0 || hightestLocalDef === lowestGlobalDef){
 			//no more optimizations possible!
 			//either no more optimizations present or ran out of definitions.
 			if (hightestLocalDef === lowestGlobalDef){
