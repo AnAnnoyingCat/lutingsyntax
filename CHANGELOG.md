@@ -24,7 +24,8 @@ All notable changes to the "Luting in VS Code" extension will be documented in t
 - Legacy Commands Safe, Unsafe and Quick optimization combined into one "Optimize" command.
 - Various small fixes
 
-### Patches 2.0.1-2.0.2
+### Patches 2.0+
 
 - Fixed: Various spelling issues
 - Fixed: Quick optimization now actually works, and is still quick.
+- Added: Loading indicator for Optimization, Download and Multilute
