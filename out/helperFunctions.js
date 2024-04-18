@@ -508,7 +508,7 @@ function makeOptimalMultilute(tokens, maxItr, optimization) {
     let multilutings = [];
     if (optimalLuting.length < 493) {
         //No multilute Needed!
-        return optimalLuting;
+        return '\n' + optimalLuting;
     }
     //First multilute is different
     let i = 0;
