@@ -239,8 +239,9 @@ export function activate(context: vscode.ExtensionContext) {
             const document = await vscode.workspace.openTextDocument(documentUri);
             const text = document.getText();
             let myTokens: lutingToken[] = provideLutingTokensFromString(text);
-
-
+            //let a = helper.getLutingIndicesOf(myTokens, myTokens.slice(1, 7));
+            let b = helper.KnuthMorrisPrattLutingIndices(myTokens, myTokens.slice(1, 7));
+            let c = 2;
             /*
             editor.edit(editBuilder => {
                 const lastLine = document.lineAt(document.lineCount - 1);
@@ -437,5 +438,5 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(cheerableLuting, cheerableLutingCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(downloadCommand, downloadCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(multiLuteCommand, multiLuteCommandHandler));
-    //context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
 }

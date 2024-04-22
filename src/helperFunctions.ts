@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { lutingToken, provideLutingTokensFromString } from './Language/myTokenParser';
+import { equal } from 'assert';
 
     /**
      * Helper function to convert an array of lutingTokens to a string.
@@ -254,7 +255,7 @@ function calculateUniqueSubstrings(tokens: lutingToken[]): { tokenArr: lutingTok
 	let tokenArrArr = Array.from(tokenSubArraySet);
     // Calculate gain for each substring
     const substringsWithGain = tokenArrArr.map(tokenArr => {
-        const occurrences = getLutingIndicesOf(tokens, tokenArr).length;
+        const occurrences = KnuthMorrisPrattLutingIndices(tokens, tokenArr).length;
         const length = totalLength(tokenArr);
         const gain = (occurrences * length) - (length + occurrences + 2);
         return { tokenArr, gain };
@@ -339,7 +340,7 @@ function squashRepeatedDefs(tokens: lutingToken[], def: lutingToken) : lutingTok
      */
 export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, quick: boolean): string{
 	let globalDefsToUse: string[] = ["Z", "Y", "X", "W", "V", "U", "T", "S", "R", "Q", "P", "O", "N", "M", "L", "K", "J", "I", "H", "G", "F", "E", "D", "C", "B", "A"];
-	let numVoices = getLutingIndicesOf(tokens, [new lutingToken("|", "new-voice")]).length + 1;
+	let numVoices = KnuthMorrisPrattLutingIndices(tokens, [new lutingToken("|", "new-voice")]).length + 1;
 	let localDefsToUse: string[][] = [];
 	for (let i = 0; i < numVoices; i++){
 		localDefsToUse[i] = [];
@@ -422,7 +423,7 @@ export function optimize(tokens: lutingToken[], maxItr: number, safe: boolean, q
 			localDefsToUse[localPosition].splice(0, 1);
 		}
 
-		let numOccurrences  = getLutingIndicesOf(tokens, best).length;
+		let numOccurrences  = KnuthMorrisPrattLutingIndices(tokens, best).length;
 		let newDefinition = new lutingToken(definitionName.concat('{'), "start-definition");
 		let newDefEnd = new lutingToken("}", "end-definition");
 
@@ -506,31 +507,6 @@ export function makeOptimalMultilute(tokens: lutingToken[], maxItr: number, opti
 	return res;
 }
 
-/**
- * Helper function to split a multiluting into "traditional" lutings.
- * @param tokens Tokens to be split
- * @returns Array of lutingToken[]
- */
-
-function splitMultilutesToLutes(tokens: lutingToken[]):lutingToken[][]{
-	let splitUpLutings: lutingToken[][] = [];
-	//Find positions of newVoice
-	let newVoicePositions: number[] = [];
-	for (let i = 0; i < tokens.length; i++){
-		if (tokens[i].type === 'luting-header'){
-			newVoicePositions.push(i);
-		}
-	}
-	//All but the last subluting
-	for (let i = 0; i < newVoicePositions.length - 1; i++){
-		splitUpLutings.push(tokens.slice(newVoicePositions[i], newVoicePositions[i + 1]));
-	}
-	//The last subluting
-	splitUpLutings.push(tokens.slice(newVoicePositions[newVoicePositions.length - 1]));
-
-	return splitUpLutings;
-}
-
     /**
      * Helper function to find out whether a definition is contained within just one voice, and if so in which, and whether it's a safe or unsafe definition.
      * @param tokens 			The array of lutingTokens to check over
@@ -543,8 +519,8 @@ function isLocalDef(tokens: lutingToken[], subLuting: lutingToken[], currentLoca
 	if (!areBracketsLegal(subLuting)){
 		return -2;
 	}
-	let substrPositions  = getLutingIndicesOf(tokens, subLuting);
-	let newVoicePositions = getLutingIndicesOf(tokens, [new lutingToken("|", "new-voice")]);
+	let substrPositions  = KnuthMorrisPrattLutingIndices(tokens, subLuting);
+	let newVoicePositions = KnuthMorrisPrattLutingIndices(tokens, [new lutingToken("|", "new-voice")]);
 	newVoicePositions.unshift(0);
 	let localPos = 0;
 	for (;localPos < newVoicePositions.length; localPos++){
@@ -623,6 +599,65 @@ export function getLutingIndicesOf(tokens: lutingToken[], subLuting: lutingToken
 		startIndex = index + subLuting.length;
 	}
 	return indices;
+}
+
+	/**
+	 * Get all indices of a subset of lutingTokens occurring within an array of lutingToken efficiently.
+	 * @param tokens 		The array of lutingTokens to check
+	 * @param subLuting 	The subLuting to check for
+	 * @returns				Array of indices of lutingTokens
+	 */
+export function KnuthMorrisPrattLutingIndices(tokens: lutingToken[], subLuting: lutingToken[]): number[]{
+	const T = KnuthMorrisPrattTableBuilder(subLuting);
+	let j = 0;
+	let k = 0;
+	let P: number[] = [];
+
+	while (j < tokens.length){
+		if (equalTokens([subLuting[k]], [tokens[j]])){
+			j++;
+			k++;
+			if (k === subLuting.length){
+				//occurrence found.
+				P.push(j-k);
+				k = T[k];
+			}
+		} else {
+			k = T[k];
+			if (k < 0){
+				j++;
+				k++;
+			}
+		}
+	}
+	return P;
+}
+
+	/**
+	 * Helper function to build the table used in KnuthMorrisPratt.
+	 * @param subLuting 		Subluting to build the table over
+	 * @returns 				Array containing the numbers in t[]
+	 */
+function KnuthMorrisPrattTableBuilder(subLuting: lutingToken[]): number[]{
+	let T: number[] = [];
+	let pos = 1;
+	let cnd = 0;
+
+	T[0] = -1;
+	while (pos < subLuting.length){
+		if (equalTokens([subLuting[pos]], [subLuting[cnd]])){
+			T[pos] = T[cnd];
+		} else {
+			T[pos] = cnd;
+			while (cnd >= 0 && !(equalTokens([subLuting[pos]], [subLuting[cnd]]))){
+				cnd = T[cnd];
+			}
+		}
+		pos++;
+		cnd++;
+	}
+	T.push(0);
+	return T;
 }
 
    /**

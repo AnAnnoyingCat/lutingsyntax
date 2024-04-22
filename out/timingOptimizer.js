@@ -169,7 +169,7 @@ function reconstructLutingFromPath(mergedGraph, path, timings) {
  * @returns The best timing placements for the given luting tokens
  */
 function generateBestTimingPlacements(tokens) {
-    const newVoicePositions = helper.getLutingIndicesOf(tokens, [new myTokenParser_1.lutingToken("|", "new-voice")]);
+    const newVoicePositions = helper.KnuthMorrisPrattLutingIndices(tokens, [new myTokenParser_1.lutingToken("|", "new-voice")]);
     (0, helperFunctions_1.removeComments)(tokens);
     const voices = [];
     let startIndex = 0;
