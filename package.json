@@ -61,10 +61,6 @@
       {
         "command": "lutingsyntax.multilute",
         "title": "Luting: Turn current luting into a multilute"
-      },
-      {
-        "command": "lutingsyntax.testCommand",
-        "title" :"Luting: Execute testCommand"
       }
     ]
   },

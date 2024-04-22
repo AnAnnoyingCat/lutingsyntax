@@ -53,6 +53,7 @@ The command "Download your Luting" will create a folder called "Luting-Out" and 
 ### Cheering
 
 Luting in VS Code supports two commands for cheering Lutings:
+
 | Type | Effect |
 | ------ | ------ |
 | Copy to clipboard | Adds the current Luting with all newLines and comments removed to clipboard. |

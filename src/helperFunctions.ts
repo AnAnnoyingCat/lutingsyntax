@@ -5,7 +5,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { lutingToken, provideLutingTokensFromString } from './Language/myTokenParser';
-import { equal } from 'assert';
 
     /**
      * Helper function to convert an array of lutingTokens to a string.

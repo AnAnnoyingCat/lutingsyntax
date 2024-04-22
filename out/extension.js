@@ -432,7 +432,7 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand(cheerableLuting, cheerableLutingCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(downloadCommand, downloadCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(multiLuteCommand, multiLuteCommandHandler));
-    context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
+    //context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
 }
 exports.activate = activate;
 //# sourceMappingURL=extension.js.map
