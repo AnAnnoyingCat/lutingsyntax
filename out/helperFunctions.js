@@ -391,6 +391,9 @@ function optimize(tokens, maxItr, safe, quick) {
     removeComments(tokens);
     if (!quick) {
         tokens = (0, myTokenParser_1.provideLutingTokensFromString)(expandDefinitions(tokens));
+        if (tokens.length >= 2500) {
+            throw new EvalError("Looks like your luting is really, really long. Please use \'Quick\' optimization instead. (dw, at this length it makes barely any difference)");
+        }
     }
     else {
         checkExistingDefs(tokens, globalDefsToUse, localDefsToUse);
