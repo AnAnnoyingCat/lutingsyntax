@@ -368,9 +368,9 @@ function squashRepeatedDefs(tokens, def) {
 /**
  * Optimize a given luting according to certain parameters
  * @param tokens The array of lutingTokens to optimize
- * @param maxItr The max number of iterations to optimize for
- * @param safe 	 True: Optimize safely and produce a guaranteed correct result; False: Optimize unsafely
- * @param quick	 True: Perform optimization without expanding definitions first
+ * @param maxItr The max number of iterations to optimize for. Recommended 50 for max. Optimization.
+ * @param safe 	 Kinda outdated, just set to true since the possible gains from unsafe optimization are miniscule.
+ * @param quick	 True: Perform optimization without expanding definitions first. False: perform thorough optimization.
  * @returns A string of the optimized luting
  */
 function optimize(tokens, maxItr, safe, quick) {
@@ -493,6 +493,13 @@ function checkExistingDefs(tokens, globalDefsToUse, localDefsToUse) {
         }
     }
 }
+/**
+ * Function to optimize luting and split into a multiluting
+ * @param tokens LutingTokens to be optimized
+ * @param maxItr max number of iterations, recommended 50 for full optimization.
+ * @param optimization Optimization type, either 'quick' (recommended for lutings around size 1.5k and upwards) or 'thorough' (recommended for shorter lutings)
+ * @returns A string containing the optimized MultiLuting
+ */
 function makeOptimalMultilute(tokens, maxItr, optimization) {
     let optimalLuting;
     if (optimization === 'quick') {

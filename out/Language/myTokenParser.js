@@ -184,9 +184,9 @@ function provideLutingTokensFromString(inputText) {
                     lineIndex += match[0].length;
                 }
             }
-            else if (char === 'v') {
+            else if (char === 'v' || char === '~') {
                 // Match volume
-                const match = line.substring(lineIndex).match(/^v\d?/);
+                const match = line.substring(lineIndex).match(/^~?v\d?/);
                 if (match) {
                     lutingTokens.push(new lutingToken(match[0], "volume"));
                     lineIndex += match[0].length;
