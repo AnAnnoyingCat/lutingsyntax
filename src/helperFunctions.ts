@@ -457,9 +457,11 @@ function checkExistingDefs(tokens: lutingToken[], globalDefsToUse: string[], loc
 	for (let i = 0; i < tokens.length; i++){
 		if (tokens[i].type === 'start-definition'){
 			let defName = tokens[i].content.match(/[A-Z]/)![0];
-			globalDefsToUse.splice(globalDefsToUse.indexOf(defName), 1);
-			for (let local of localDefsToUse){
-				local.splice(local.indexOf(defName), 1);
+			if (globalDefsToUse.includes(defName)){
+				globalDefsToUse.splice(globalDefsToUse.indexOf(defName), 1);
+				for (let local of localDefsToUse){
+					local.splice(local.indexOf(defName), 1);
+				}
 			}
 		}
 	}
