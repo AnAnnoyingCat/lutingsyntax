@@ -288,7 +288,7 @@ export function activate(context: vscode.ExtensionContext) {
                 let expandedTokens = helper.expandTimings(myTokens);
                 myTokens = generateBestTimingPlacements(expandedTokens);
                 
-                let timingOptimizedResult = helper.optimize(myTokens, 50, false, false);
+                let timingOptimizedResult = helper.optimize(myTokens, 50, true, false);
                 
                 editor.edit(editBuilder => {
                     const lastLine = document.lineAt(document.lineCount - 1);
@@ -438,5 +438,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand(cheerableLuting, cheerableLutingCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(downloadCommand, downloadCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(multiLuteCommand, multiLuteCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(timedOptimizationCommand, timedOptimizationCommandHandler));
     //context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
 }

@@ -296,7 +296,7 @@ function activate(context) {
                 myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(helper.expandDefinitions(myTokens));
                 let expandedTokens = helper.expandTimings(myTokens);
                 myTokens = (0, timingOptimizer_1.generateBestTimingPlacements)(expandedTokens);
-                let timingOptimizedResult = helper.optimize(myTokens, 50, false, false);
+                let timingOptimizedResult = helper.optimize(myTokens, 50, true, false);
                 editor.edit(editBuilder => {
                     const lastLine = document.lineAt(document.lineCount - 1);
                     const end = lastLine.range.end;
@@ -432,6 +432,7 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand(cheerableLuting, cheerableLutingCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(downloadCommand, downloadCommandHandler));
     context.subscriptions.push(vscode.commands.registerCommand(multiLuteCommand, multiLuteCommandHandler));
+    context.subscriptions.push(vscode.commands.registerCommand(timedOptimizationCommand, timedOptimizationCommandHandler));
     //context.subscriptions.push(vscode.commands.registerCommand(testCommand, testCommandHandler));
 }
 exports.activate = activate;

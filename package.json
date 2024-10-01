@@ -61,6 +61,10 @@
       {
         "command": "lutingsyntax.multilute",
         "title": "Luting: Turn current luting into a multilute"
+      },
+      {
+        "command": "lutingsyntax.timedOptimization",
+        "title": "Luting: Default Duration Optimization"
       }
     ]
   },
