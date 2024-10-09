@@ -96,9 +96,9 @@ export function activate(context: vscode.ExtensionContext) {
                     let optimizedResult = helper.tokensToString(myTokens);
 
                     if (optimizationType === 'thorough'){
-                        optimizedResult = helper.optimize(myTokens, 50, true, false);
+                        optimizedResult = helper.optimize(myTokens, 75, true, false);
                     } else if (optimizationType === 'quick'){
-                        optimizedResult = helper.optimize(myTokens, 50, true, true);
+                        optimizedResult = helper.optimize(myTokens, 75, true, true);
                     }
                     
                     //write back into the document
@@ -201,7 +201,7 @@ export function activate(context: vscode.ExtensionContext) {
                 const text = document.getText();
                 let myTokens: lutingToken[] = provideLutingTokensFromString(text);
 
-                let res = helper.makeOptimalMultilute(myTokens, 50, optimizationType);
+                let res = helper.makeOptimalMultilute(myTokens, 75, optimizationType);
 
                 
                 editor.edit(editBuilder => {
