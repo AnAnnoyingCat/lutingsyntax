@@ -213,6 +213,19 @@ function provideLutingTokensFromString(inputText) {
                     lineIndex += char.length;
                 }
             }
+            else if (char === '@') {
+                // Match BPM
+                const trailingFrac = line.substring(lineIndex + 1).match(/^(\d+\/\d+|\d+|\/\d+)/);
+                if (trailingFrac) {
+                    const fullString = char.concat(trailingFrac[0].toString());
+                    lutingTokens.push(new lutingToken(fullString, "time"));
+                    lineIndex += fullString.length;
+                }
+                else if (char) {
+                    lutingTokens.push(new lutingToken(char, "time"));
+                    lineIndex += char.length;
+                }
+            }
             else {
                 // Unrecognized token; throwing an error.
                 throw new TypeError("unrecognized character: " + char.toString() + " in line " + i + ", char nr. " + (lineIndex + 1) + ".");
