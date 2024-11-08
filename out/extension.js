@@ -109,10 +109,10 @@ function activate(context) {
                 let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
                 let optimizedResult = helper.tokensToString(myTokens);
                 if (optimizationType === 'thorough') {
-                    optimizedResult = helper.optimize(myTokens, 50, true, false);
+                    optimizedResult = helper.optimize(myTokens, 75, true, false);
                 }
                 else if (optimizationType === 'quick') {
-                    optimizedResult = helper.optimize(myTokens, 50, true, true);
+                    optimizedResult = helper.optimize(myTokens, 75, true, true);
                 }
                 //write back into the document
                 editor.edit(editBuilder => {
@@ -213,7 +213,7 @@ function activate(context) {
                 const document = await vscode.workspace.openTextDocument(documentUri);
                 const text = document.getText();
                 let myTokens = (0, myTokenParser_1.provideLutingTokensFromString)(text);
-                let res = helper.makeOptimalMultilute(myTokens, 50, optimizationType);
+                let res = helper.makeOptimalMultilute(myTokens, 75, optimizationType);
                 editor.edit(editBuilder => {
                     const lastLine = document.lineAt(document.lineCount - 1);
                     const end = lastLine.range.end;
