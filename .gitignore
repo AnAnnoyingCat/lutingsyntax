@@ -1,4 +1,15 @@
+# Ignore VS Code settings folder  
 .vscode/
+
+# Ignore dependencies  
 node_modules/
+
+# Ignore build output  
 out/
+
+# Ignore test script  
 .vscode-test.mjs
+
+# Ignore other common files  
+*.log
+.DS_Store
