@@ -2,7 +2,7 @@
 
 ## _QOL for writing Lutings_
 
-Luting in VS Code is a small extension I made for the purpose of simplifying the process of writing and maintaining a database of your previously written Lutings in VS Code.
+Luting in VS Code provides syntax highliting and an efficient compression algorithm for [Lutings](https://luteboi.com/) which automatically truncates long Lutings into Multi-Lutings.
 
 ## Features
 
